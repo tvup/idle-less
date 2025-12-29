@@ -1,0 +1,60 @@
+x-common-env: &common-env
+  HERO_HOST: ${HERO_HOST}
+  HERO_PORT: ${HERO_PORT}
+
+services:
+  reverse-proxy:
+    image: tvup/reverse-proxy:latest
+    container_name: reverse-proxy
+    volumes:
+      - 'reverse-proxy-nginx-data:/etc/nginx/conf.d'
+    environment:
+      <<: *common-env
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - wakeforce
+    networks:
+      - internal
+
+  wakeforce:
+    image: tvup/wakeforce:latest
+    container_name: wakeforce
+    environment:
+      <<: *common-env
+      HERO_MAC: ${HERO_MAC}
+      HERO_BROADCAST: ${HERO_BROADCAST}
+      LICENSE_KEY: ${LICENSE_KEY}
+      LICENSE_SERVER: "https://validate.torbenit.dk"
+      LICENSE_CACHE_TTL_SECONDS: "86400"
+    restart: unless-stopped
+    volumes:
+      - wakeforce_license:/var/lib/wakeforce/license
+    expose:
+      - "8182"
+    networks:
+      internal: {}
+      lan: {}
+    cap_add:
+      - NET_RAW
+
+
+networks:
+  internal:
+    driver: bridge
+
+  lan:
+    driver: macvlan
+    driver_opts:
+      parent: ${LAN_IFACE}
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+          gateway: 192.168.1.1
+
+volumes:
+  reverse-proxy-nginx-data:
+    driver: local
+  wakeforce_license:
+
