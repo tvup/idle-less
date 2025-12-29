@@ -2,6 +2,11 @@
 
 **Always-reachable services — even when your servers sleep.**
 
+TL;DR
+```
+  curl -fsSL https://raw.githubusercontent.com/tvup/idle-less/master/install.sh | bash
+```
+
 Idle-less is a lightweight gateway solution that keeps your application reachable even when backend servers are scaled to zero, powered down, or temporarily unavailable.
 
 It ensures that incoming requests are never “lost”, even if the actual workload is not currently running.
