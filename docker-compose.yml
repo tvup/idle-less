@@ -26,7 +26,6 @@ services:
       HERO_MAC: ${HERO_MAC}
       HERO_BROADCAST: ${HERO_BROADCAST}
       LICENSE_KEY: ${LICENSE_KEY}
-      LICENSE_SERVER: "https://validate.torbenit.dk"
       LICENSE_CACHE_TTL_SECONDS: "86400"
     restart: unless-stopped
     volumes:

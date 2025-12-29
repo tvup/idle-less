@@ -29,6 +29,7 @@ HERO_HOST="${HERO_HOST:-$(prompt HERO_HOST "Enter HERO_HOST (e.g. hero or hero.i
 HERO_PORT="${HERO_PORT:-$(prompt HERO_PORT "Enter HERO_PORT (e.g. 3080)" "3080")}"
 HERO_MAC="${HERO_MAC:-$(prompt HERO_MAC "Enter HERO_MAC (e.g. D8:9E:F3:12:D0:10)" "D8:9E:F3:12:D0:10")}"
 HERO_BROADCAST="${HERO_BROADCAST:-$(prompt HERO_BROADCAST "Enter HERO_BROADCAST (e.g. 192.168.1.255)" "192.168.1.255")}"
+LICENSE_KEY="${LICENSE_KEY:-$(prompt LICENSE_KEY "Enter LICENSE_KEY (leave empty for trial)")}"
 
 if ! [[ "$HERO_PORT" =~ ^[0-9]+$ ]] || [ "$HERO_PORT" -lt 1 ] || [ "$HERO_PORT" -gt 65535 ]; then
   echo "❌ HERO_PORT must be 1-65535" >&2
@@ -60,6 +61,7 @@ HERO_BROADCAST=$HERO_BROADCAST
 LAN_IFACE="${LAN_IFACE:-eth0}"
 STAND_IN_PORT=80
 HEALTH_PATH="/health"
+LICENSE_KEY=$LICENSE_KEY
 EOF
 
 echo "✅ Saved HERO_HOST, HERO_PORT, HERO_MAC, HERO_BROADCAST, and LAN_IFACE in .env"
