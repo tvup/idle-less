@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${BASE_URL:-https://raw.githubusercontent.com/tvup/wakeforce/master/}"
+BASE_URL="${BASE_URL:-https://raw.githubusercontent.com/tvup/idle-less/master/}"
 INSTALL_DIR="${INSTALL_DIR:-.}"
 
 require_cmd() { command -v "$1" >/dev/null 2>&1 || { echo "❌ Missing $1"; exit 1; }; }
