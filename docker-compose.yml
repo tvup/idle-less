@@ -1,6 +1,7 @@
 x-common-env: &common-env
-  HERO_HOST: ${HERO_HOST}
-  HERO_PORT: ${HERO_PORT}
+  HERO_HOSTNAME: ${HERO_HOSTNAME}
+  HERO_HOST_PORT: ${HERO_HOST_PORT}
+  HERO_HOST_IP: ${HERO_HOST_IP}
 
 services:
   reverse-proxy:
@@ -23,8 +24,8 @@ services:
     container_name: wakeforce
     environment:
       <<: *common-env
-      HERO_MAC: ${HERO_MAC}
-      HERO_BROADCAST: ${HERO_BROADCAST}
+      HERO_HOST_MAC: ${HERO_HOST_MAC}
+      BROADCAST_IP: ${BROADCAST_IP}
       LICENSE_KEY: ${LICENSE_KEY}
       LICENSE_CACHE_TTL_SECONDS: "86400"
     restart: unless-stopped
@@ -46,7 +47,7 @@ networks:
   lan:
     driver: macvlan
     driver_opts:
-      parent: ${LAN_IFACE}
+      parent: ${LAN_INTERFACE}
     ipam:
       config:
         - subnet: 192.168.1.0/24
