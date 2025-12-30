@@ -3,7 +3,6 @@ set -euo pipefail
 
 BASE_URL="${BASE_URL:-https://raw.githubusercontent.com/tvup/idle-less/master/}"
 INSTALL_DIR="${INSTALL_DIR:-.}"
-
 require_cmd() { command -v "$1" >/dev/null 2>&1 || { echo "❌ Missing $1"; exit 1; }; }
 
 prompt() {
@@ -34,7 +33,6 @@ LAN_INTERFACE="$(ip route show default 2>/dev/null | awk '{print $5; exit}' | tr
 
  if ! [[ "$HERO_HOST_PORT" =~ ^[0-9]+$ ]] || [ "$HERO_HOST_PORT" -lt 1 ] || [ "$HERO_HOST_PORT" -gt 65535 ]; then
    echo "❌ HERO_HOST_PORT must be 1-65535" >&2
-   exit 1
  fi
 
 echo

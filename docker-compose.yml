@@ -7,15 +7,19 @@ services:
   reverse-proxy:
     image: tvup/reverse-proxy:latest
     container_name: reverse-proxy
-    volumes:
-      - 'reverse-proxy-nginx-data:/etc/nginx/conf.d'
-    environment:
-      <<: *common-env
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      <<: *common-env
+      SSL_CERT_PATH: /etc/nginx/ssl/fullchain.pem
+      SSL_KEY_PATH: /etc/nginx/ssl/privkey.pem
     depends_on:
       - wakeforce
+    volumes:
+      - ./certs/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
+      - ./certs/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
+      - 'reverse-proxy-nginx-data:/etc/nginx/conf.d'
     networks:
       - internal
 
