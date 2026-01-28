@@ -75,7 +75,7 @@ setup_domain() {
   fi
 
   local hostname port ip mac broadcast lan_interface enable_wf config_type
-  local use_ssl ssl_cert ssl_key
+  local use_ssl ssl_cert ssl_key use_https
 
   if [ "$is_primary" = "yes" ]; then
     hostname="${BACKEND_HOSTNAME:-$(prompt BACKEND_HOSTNAME "Enter hostname" "chat.christianogfars.online")}"
@@ -91,6 +91,9 @@ setup_domain() {
   fi
 
   ip=$(prompt IP "Enter backend IP" "192.168.1.22")
+
+  echo
+  use_https=$(prompt_optional USE_HTTPS "Does backend use HTTPS? (yes/no)" "no")
 
   echo
   enable_wf=$(prompt_optional ENABLE_WAKEFORCE "Enable Wakeforce for this domain? (yes/no)" "yes")
@@ -121,7 +124,7 @@ setup_domain() {
   fi
 
   # Gem konfiguration
-  local config_json="{\"hostname\":\"$hostname\",\"port\":\"$port\",\"ip\":\"$ip\",\"mac\":\"$mac\",\"broadcast\":\"$broadcast\",\"lan_interface\":\"$lan_interface\",\"enable_wakeforce\":\"$enable_wf\",\"config_type\":\"$config_type\",\"is_primary\":\"$is_primary\",\"use_ssl\":\"$use_ssl\",\"ssl_cert\":\"$ssl_cert\",\"ssl_key\":\"$ssl_key\"}"
+  local config_json="{\"hostname\":\"$hostname\",\"port\":\"$port\",\"ip\":\"$ip\",\"use_https\":\"$use_https\",\"mac\":\"$mac\",\"broadcast\":\"$broadcast\",\"lan_interface\":\"$lan_interface\",\"enable_wakeforce\":\"$enable_wf\",\"config_type\":\"$config_type\",\"is_primary\":\"$is_primary\",\"use_ssl\":\"$use_ssl\",\"ssl_cert\":\"$ssl_cert\",\"ssl_key\":\"$ssl_key\"}"
 
   DOMAINS+=("$hostname")
   CONFIGS+=("$config_json")
@@ -213,6 +216,7 @@ services:
       BACKEND_HOSTNAME: ${BACKEND_HOSTNAME}
       BACKEND_PORT: ${BACKEND_PORT}
       BACKEND_IP: ${BACKEND_IP}
+      PRIMARY_USE_HTTPS: ${PRIMARY_USE_HTTPS:-no}
       PRIMARY_CONFIG: ${PRIMARY_CONFIG}
       PRIMARY_USE_SSL: ${PRIMARY_USE_SSL:-no}
       PRIMARY_SSL_CERT: ${PRIMARY_SSL_CERT:-}
@@ -231,6 +235,7 @@ for i in "${!CONFIGS[@]}"; do
       DOMAIN_${i}_HOSTNAME: \${DOMAIN_${i}_HOSTNAME:-}
       DOMAIN_${i}_IP: \${DOMAIN_${i}_IP:-}
       DOMAIN_${i}_PORT: \${DOMAIN_${i}_PORT:-}
+      DOMAIN_${i}_USE_HTTPS: \${DOMAIN_${i}_USE_HTTPS:-no}
       DOMAIN_${i}_CONFIG: \${DOMAIN_${i}_CONFIG:-}
       DOMAIN_${i}_USE_SSL: \${DOMAIN_${i}_USE_SSL:-no}
       DOMAIN_${i}_SSL_CERT: \${DOMAIN_${i}_SSL_CERT:-}
@@ -407,6 +412,7 @@ echo "Writing .env ..."
 PRIMARY_CONFIG=$(echo "${CONFIGS[0]}" | sed 's/[{}]//g' | sed 's/"//g')
 PRIMARY_HOSTNAME=$(echo "$PRIMARY_CONFIG" | grep -o 'hostname:[^,]*' | cut -d: -f2)
 PRIMARY_PORT=$(echo "$PRIMARY_CONFIG" | grep -o 'port:[^,]*' | cut -d: -f2)
+PRIMARY_USE_HTTPS=$(echo "$PRIMARY_CONFIG" | grep -o 'use_https:[^,]*' | cut -d: -f2)
 PRIMARY_IP=$(echo "$PRIMARY_CONFIG" | grep -o 'ip:[^,]*' | cut -d: -f2)
 PRIMARY_MAC=$(echo "$PRIMARY_CONFIG" | grep -o 'mac:[^,]*' | cut -d: -f2)
 PRIMARY_BROADCAST=$(echo "$PRIMARY_CONFIG" | grep -o 'broadcast:[^,]*' | cut -d: -f2)
@@ -423,6 +429,7 @@ cat > .env <<EOF
 BACKEND_HOSTNAME=$PRIMARY_HOSTNAME
 BACKEND_PORT=$PRIMARY_PORT
 BACKEND_IP=$PRIMARY_IP
+PRIMARY_USE_HTTPS=${PRIMARY_USE_HTTPS:-no}
 PRIMARY_CONFIG=$PRIMARY_CONFIG_TYPE
 PRIMARY_USE_SSL=$PRIMARY_USE_SSL
 EOF
@@ -463,6 +470,7 @@ if [ ${#CONFIGS[@]} -gt 1 ]; then
     HOSTNAME=$(echo "$CONFIG_CLEAN" | grep -o 'hostname:[^,]*' | cut -d: -f2)
     PORT=$(echo "$CONFIG_CLEAN" | grep -o 'port:[^,]*' | cut -d: -f2)
     IP=$(echo "$CONFIG_CLEAN" | grep -o 'ip:[^,]*' | cut -d: -f2)
+    USE_HTTPS=$(echo "$CONFIG_CLEAN" | grep -o 'use_https:[^,]*' | cut -d: -f2)
     MAC=$(echo "$CONFIG_CLEAN" | grep -o 'mac:[^,]*' | cut -d: -f2)
     BROADCAST=$(echo "$CONFIG_CLEAN" | grep -o 'broadcast:[^,]*' | cut -d: -f2)
     LAN=$(echo "$CONFIG_CLEAN" | grep -o 'lan_interface:[^,]*' | cut -d: -f2)
@@ -486,6 +494,7 @@ ${DOMAIN_PREFIX}_PORT=$PORT
 ${DOMAIN_PREFIX}_IP=$IP
 ${DOMAIN_PREFIX}_CONFIG=$CONFIG_TYPE
 ${DOMAIN_PREFIX}_USE_SSL=$USE_SSL
+${DOMAIN_PREFIX}_USE_HTTPS=${USE_HTTPS:-no}
 EOF
 
     if [ "$USE_SSL" = "yes" ]; then
@@ -519,6 +528,7 @@ echo
 echo "Primary Domain:"
 echo "  Hostname: $PRIMARY_HOSTNAME"
 echo "  Backend: $PRIMARY_IP:$PRIMARY_PORT"
+echo "  HTTPS: $PRIMARY_USE_HTTPS"
 echo "  Config: $PRIMARY_CONFIG_TYPE"
 echo "  SSL: $PRIMARY_USE_SSL"
 if [ "$PRIMARY_USE_SSL" = "yes" ]; then
@@ -548,9 +558,11 @@ if [ ${#CONFIGS[@]} -gt 1 ]; then
     ENABLE_WF=$(echo "$CONFIG_CLEAN" | grep -o 'enable_wakeforce:[^,]*' | cut -d: -f2)
     CONFIG_TYPE=$(echo "$CONFIG_CLEAN" | grep -o 'config_type:[^,]*' | cut -d: -f2)
     USE_SSL=$(echo "$CONFIG_CLEAN" | grep -o 'use_ssl:[^,]*' | cut -d: -f2)
+    USE_HTTPS=$(echo "$CONFIG_CLEAN" | grep -o 'use_https:[^,]*' | cut -d: -f2)
 
     echo "  [$i] $HOSTNAME"
     echo "      Backend: $IP:$PORT"
+    echo "      HTTPS: $USE_HTTPS"
     echo "      Config: $CONFIG_TYPE"
     echo "      SSL: $USE_SSL"
     if [ "$ENABLE_WF" = "yes" ]; then
