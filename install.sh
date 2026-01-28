@@ -268,6 +268,7 @@ for i in "${!CONFIGS[@]}"; do
   if [ "$ENABLE_WF" = "yes" ]; then
     if [ $i -eq 0 ]; then
       SERVICE_NAME="wakeforce_primary"
+      HOSTNAME_VAR="BACKEND_HOSTNAME"
       IP_VAR="BACKEND_IP"
       PORT_VAR="BACKEND_PORT"
       MAC_VAR="BACKEND_MAC"
@@ -276,6 +277,7 @@ for i in "${!CONFIGS[@]}"; do
       NETWORK_NAME="lan_primary"
     else
       SERVICE_NAME="wakeforce_${i}"
+      HOSTNAME_VAR="DOMAIN_${i}_HOSTNAME"
       IP_VAR="DOMAIN_${i}_IP"
       PORT_VAR="DOMAIN_${i}_PORT"
       MAC_VAR="DOMAIN_${i}_MAC"
@@ -289,6 +291,7 @@ for i in "${!CONFIGS[@]}"; do
     image: tvup/wakeforce:latest
     container_name: ${SERVICE_NAME}
     environment:
+      BACKEND_HOSTNAME: \${${HOSTNAME_VAR}}
       BACKEND_IP: \${${IP_VAR}}
       BACKEND_PORT: \${${PORT_VAR}}
       BACKEND_MAC: \${${MAC_VAR}}
