@@ -134,17 +134,41 @@ for config in "${CONFIGS[@]}"; do
   USE_SSL=$(echo "$CONFIG_CLEAN" | grep -o 'use_ssl:[^,]*' | cut -d: -f2)
 
   if [ "$USE_SSL" = "yes" ]; then
+    HOSTNAME=$(echo "$CONFIG_CLEAN" | grep -o 'hostname:[^,]*' | cut -d: -f2)
     SSL_CERT=$(echo "$CONFIG_CLEAN" | grep -o 'ssl_cert:[^,]*' | cut -d: -f2-)
     SSL_KEY=$(echo "$CONFIG_CLEAN" | grep -o 'ssl_key:[^,]*' | cut -d: -f2-)
 
     if [[ "$SSL_CERT" == http* ]]; then
-      HOSTNAME=$(echo "$CONFIG_CLEAN" | grep -o 'hostname:[^,]*' | cut -d: -f2)
-      curl -fsSL "$SSL_CERT" -o "certs/${HOSTNAME}.crt"
+      echo "  Downloading certificate for $HOSTNAME..."
+      curl -fsSL "$SSL_CERT" -o "certs/${HOSTNAME}-fullchain.pem"
+      SSL_CERT_CONTAINER="/etc/certs/${HOSTNAME}-fullchain.pem"
+    elif [ -f "$SSL_CERT" ]; then
+      echo "  Copying certificate for $HOSTNAME..."
+      cp "$SSL_CERT" "certs/${HOSTNAME}-fullchain.pem"
+      SSL_CERT_CONTAINER="/etc/certs/${HOSTNAME}-fullchain.pem"
+    else
+      echo "  ⚠️  Certificate not found: $SSL_CERT"
+      SSL_CERT_CONTAINER="/etc/certs/${HOSTNAME}-fullchain.pem"
     fi
 
+    # Download eller kopier key
     if [[ "$SSL_KEY" == http* ]]; then
-      HOSTNAME=$(echo "$CONFIG_CLEAN" | grep -o 'hostname:[^,]*' | cut -d: -f2)
-      curl -fsSL "$SSL_KEY" -o "certs/${HOSTNAME}.key"
+      echo "  Downloading key for $HOSTNAME..."
+      curl -fsSL "$SSL_KEY" -o "certs/${HOSTNAME}-privkey.pem"
+      SSL_KEY_CONTAINER="/etc/certs/${HOSTNAME}-privkey.pem"
+    elif [ -f "$SSL_KEY" ]; then
+      echo "  Copying key for $HOSTNAME..."
+      cp "$SSL_KEY" "certs/${HOSTNAME}-privkey.pem"
+      SSL_KEY_CONTAINER="/etc/certs/${HOSTNAME}-privkey.pem"
+    else
+      echo "  ⚠️  Key not found: $SSL_KEY"
+      SSL_KEY_CONTAINER="/etc/certs/${HOSTNAME}-privkey.pem"
+    fi
+
+    # Opdater config med container paths
+    if [ "$(echo "$CONFIG_CLEAN" | grep -o 'is_primary:[^,]*' | cut -d: -f2)" = "yes" ]; then
+      PRIMARY_SSL_CERT="$SSL_CERT_CONTAINER"
+      PRIMARY_SSL_KEY="$SSL_KEY_CONTAINER"
     fi
   fi
 done
@@ -194,7 +218,7 @@ done
 # Fortsæt reverse-proxy config
 cat >> docker-compose.yml <<'EOF'
     volumes:
-      - ./certs:/etc/ssl:ro
+      - ./certs:/etc/certs:ro
       - reverse-proxy-nginx-data:/etc/nginx/conf.d
     networks:
       - internal
@@ -377,9 +401,12 @@ PRIMARY_USE_SSL=$PRIMARY_USE_SSL
 EOF
 
 if [ "$PRIMARY_USE_SSL" = "yes" ]; then
+  CERT_FILENAME="${PRIMARY_HOSTNAME}-fullchain.pem"
+  KEY_FILENAME="${PRIMARY_HOSTNAME}-privkey.pem"
+
   cat >> .env <<EOF
-PRIMARY_SSL_CERT=$PRIMARY_SSL_CERT
-PRIMARY_SSL_KEY=$PRIMARY_SSL_KEY
+PRIMARY_SSL_CERT=/etc/certs/${CERT_FILENAME}
+PRIMARY_SSL_KEY=/etc/certs/${KEY_FILENAME}
 EOF
 fi
 
@@ -435,9 +462,12 @@ ${DOMAIN_PREFIX}_USE_SSL=$USE_SSL
 EOF
 
     if [ "$USE_SSL" = "yes" ]; then
+      CERT_FILENAME="${HOSTNAME}-fullchain.pem"
+      KEY_FILENAME="${HOSTNAME}-privkey.pem"
+
       cat >> .env <<EOF
-${DOMAIN_PREFIX}_SSL_CERT=$SSL_CERT
-${DOMAIN_PREFIX}_SSL_KEY=$SSL_KEY
+${DOMAIN_PREFIX}_SSL_CERT=/etc/certs/${CERT_FILENAME}
+${DOMAIN_PREFIX}_SSL_KEY=/etc/certs/${KEY_FILENAME}
 EOF
     fi
 
