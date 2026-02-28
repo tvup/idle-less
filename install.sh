@@ -4,10 +4,12 @@ set -euo pipefail
 BASE_URL="${BASE_URL:-https://raw.githubusercontent.com/tvup/idle-less/master/}"
 INSTALL_DIR="${INSTALL_DIR:-.}"
 ENABLE_WAKEFORCE=false
+WAKEFORCE_ONLY=false
 
 for arg in "$@"; do
   case $arg in
     --wakeforce) ENABLE_WAKEFORCE=true ;;
+    --wakeforce-only) ENABLE_WAKEFORCE=true; WAKEFORCE_ONLY=true ;;
   esac
 done
 
@@ -27,7 +29,10 @@ load_script() {
 }
 
 load_script common.sh
-load_script install-reverse-proxy.sh
+
+if [ "$WAKEFORCE_ONLY" != true ]; then
+  load_script install-reverse-proxy.sh
+fi
 
 if [ "$ENABLE_WAKEFORCE" = true ]; then
   load_script install-wakeforce.sh
@@ -73,15 +78,21 @@ setup_domain() {
 
   ip=$(prompt IP "Enter backend IP" "192.168.1.22")
 
-  echo
-  use_https=$(prompt_optional USE_HTTPS "Does backend use HTTPS? (yes/no)" "no")
+  if [ "$WAKEFORCE_ONLY" = true ]; then
+    use_https="no"
+    use_ssl="no"
+    certs_host_path=""
+  else
+    echo
+    use_https=$(prompt_optional USE_HTTPS "Does backend use HTTPS? (yes/no)" "no")
 
-  echo
-  use_ssl=$(prompt_optional USE_SSL "Enable SSL for this domain? (yes/no)" "yes")
+    echo
+    use_ssl=$(prompt_optional USE_SSL "Enable SSL for this domain? (yes/no)" "yes")
 
-  certs_host_path=""
-  if [ "$use_ssl" = "yes" ]; then
-    certs_host_path=$(prompt CERTS_HOST_PATH "Directory on host with cert files for ${hostname}" "/etc/letsencrypt/live/${hostname}")
+    certs_host_path=""
+    if [ "$use_ssl" = "yes" ]; then
+      certs_host_path=$(prompt CERTS_HOST_PATH "Directory on host with cert files for ${hostname}" "/etc/letsencrypt/live/${hostname}")
+    fi
   fi
 
   local config_json="{\"hostname\":\"$hostname\",\"port\":\"$port\",\"ip\":\"$ip\",\"use_https\":\"$use_https\",\"is_primary\":\"$is_primary\",\"use_ssl\":\"$use_ssl\",\"certs_host_path\":\"$certs_host_path\"}"
@@ -117,33 +128,35 @@ echo "Installing into: $INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
-echo
-echo "Verifying certificate files..."
-NEEDS_SUDO=false
-for idx in "${!CONFIGS[@]}"; do
-  config="${CONFIGS[$idx]}"
-  USE_SSL=$(config_get "$config" "use_ssl")
-
-  if [ "$USE_SSL" = "yes" ]; then
-    D_HOSTNAME=$(config_get "$config" "hostname")
-    D_CERTS_PATH=$(config_get "$config" "certs_host_path")
-
-    echo "  ${D_HOSTNAME}:"
-    for fname in fullchain.pem privkey.pem; do
-      result=$(check_file "${D_CERTS_PATH}/${fname}")
-      case $result in
-        found)   echo "    ✅ ${fname}" ;;
-        sudo)    echo "    🔒 ${fname} (requires sudo)"; NEEDS_SUDO=true ;;
-        missing) echo "    ⚠️  ${fname} not found in ${D_CERTS_PATH}/" ;;
-      esac
-    done
-  fi
-done
-
-if [ "$NEEDS_SUDO" = true ]; then
+if [ "$WAKEFORCE_ONLY" != true ]; then
   echo
-  echo "  Some cert files require elevated permissions."
-  echo "  Docker runs as root, so the container can read them — no action needed."
+  echo "Verifying certificate files..."
+  NEEDS_SUDO=false
+  for idx in "${!CONFIGS[@]}"; do
+    config="${CONFIGS[$idx]}"
+    USE_SSL=$(config_get "$config" "use_ssl")
+
+    if [ "$USE_SSL" = "yes" ]; then
+      D_HOSTNAME=$(config_get "$config" "hostname")
+      D_CERTS_PATH=$(config_get "$config" "certs_host_path")
+
+      echo "  ${D_HOSTNAME}:"
+      for fname in fullchain.pem privkey.pem; do
+        result=$(check_file "${D_CERTS_PATH}/${fname}")
+        case $result in
+          found)   echo "    ✅ ${fname}" ;;
+          sudo)    echo "    🔒 ${fname} (requires sudo)"; NEEDS_SUDO=true ;;
+          missing) echo "    ⚠️  ${fname} not found in ${D_CERTS_PATH}/" ;;
+        esac
+      done
+    fi
+  done
+
+  if [ "$NEEDS_SUDO" = true ]; then
+    echo
+    echo "  Some cert files require elevated permissions."
+    echo "  Docker runs as root, so the container can read them — no action needed."
+  fi
 fi
 
 # ── Generate docker-compose.yml ──
@@ -154,36 +167,59 @@ cat > docker-compose.yml <<'EOF'
 services:
 EOF
 
-write_reverse_proxy_service
-
-if [ "$ENABLE_WAKEFORCE" = true ]; then
-  write_wakeforce_depends_on
+if [ "$WAKEFORCE_ONLY" = true ]; then
+  # Wakeforce standalone — no reverse-proxy
   write_wakeforce_services
-fi
 
-echo "" >> docker-compose.yml
+  echo "" >> docker-compose.yml
 
-# Networks
-cat >> docker-compose.yml <<'EOF'
+  # Networks
+  cat >> docker-compose.yml <<'EOF'
+networks:
+  internal:
+    driver: bridge
+
+EOF
+  write_wakeforce_networks
+
+  # Volumes
+  cat >> docker-compose.yml <<'EOF'
+volumes:
+EOF
+  write_wakeforce_volumes
+else
+  # Reverse-proxy (optionally with wakeforce)
+  write_reverse_proxy_service
+
+  if [ "$ENABLE_WAKEFORCE" = true ]; then
+    write_wakeforce_depends_on
+    write_wakeforce_services
+  fi
+
+  echo "" >> docker-compose.yml
+
+  # Networks
+  cat >> docker-compose.yml <<'EOF'
 networks:
   internal:
     driver: bridge
 
 EOF
 
-if [ "$ENABLE_WAKEFORCE" = true ]; then
-  write_wakeforce_networks
-fi
+  if [ "$ENABLE_WAKEFORCE" = true ]; then
+    write_wakeforce_networks
+  fi
 
-# Volumes
-cat >> docker-compose.yml <<'EOF'
+  # Volumes
+  cat >> docker-compose.yml <<'EOF'
 volumes:
   reverse-proxy-nginx-data:
     driver: local
 EOF
 
-if [ "$ENABLE_WAKEFORCE" = true ]; then
-  write_wakeforce_volumes
+  if [ "$ENABLE_WAKEFORCE" = true ]; then
+    write_wakeforce_volumes
+  fi
 fi
 
 echo "✅ docker-compose.yml generated"
@@ -225,15 +261,20 @@ for i in "${!CONFIGS[@]}"; do
 ${PREFIX}_HOSTNAME=$D_HOSTNAME
 ${PREFIX}_PORT=$D_PORT
 ${PREFIX}_IP=$D_IP
+EOF
+
+  if [ "$WAKEFORCE_ONLY" != true ]; then
+    cat >> .env <<EOF
 ${PREFIX}_USE_HTTPS=${D_USE_HTTPS:-no}
 ${PREFIX}_USE_SSL=$D_USE_SSL
 EOF
 
-  if [ "$D_USE_SSL" = "yes" ]; then
-    D_CERTS_PATH=$(config_get "$config" "certs_host_path")
-    cat >> .env <<EOF
+    if [ "$D_USE_SSL" = "yes" ]; then
+      D_CERTS_PATH=$(config_get "$config" "certs_host_path")
+      cat >> .env <<EOF
 ${PREFIX}_CERTS_HOST_PATH=$D_CERTS_PATH
 EOF
+    fi
   fi
 
   if [ "$ENABLE_WAKEFORCE" = true ]; then
@@ -277,12 +318,15 @@ for i in "${!CONFIGS[@]}"; do
   fi
   echo "  Hostname: $D_HOSTNAME"
   echo "  Backend: $D_IP:$D_PORT"
-  echo "  HTTPS: $D_USE_HTTPS"
-  echo "  SSL: $D_USE_SSL"
 
-  if [ "$D_USE_SSL" = "yes" ]; then
-    D_CERTS_PATH=$(config_get "$config" "certs_host_path")
-    echo "  Certs: $D_CERTS_PATH"
+  if [ "$WAKEFORCE_ONLY" != true ]; then
+    echo "  HTTPS: $D_USE_HTTPS"
+    echo "  SSL: $D_USE_SSL"
+
+    if [ "$D_USE_SSL" = "yes" ]; then
+      D_CERTS_PATH=$(config_get "$config" "certs_host_path")
+      echo "  Certs: $D_CERTS_PATH"
+    fi
   fi
 
   if [ "$ENABLE_WAKEFORCE" = true ]; then
@@ -318,12 +362,17 @@ echo "Your services are available at:"
 for i in "${!CONFIGS[@]}"; do
   config="${CONFIGS[$i]}"
   D_HOSTNAME=$(config_get "$config" "hostname")
-  USE_SSL=$(config_get "$config" "use_ssl")
 
-  if [ "$USE_SSL" = "yes" ]; then
-    echo "  https://$D_HOSTNAME"
+  if [ "$WAKEFORCE_ONLY" = true ]; then
+    local_port=$((8182 + i))
+    echo "  http://${D_HOSTNAME}:${local_port}"
   else
-    echo "  http://$D_HOSTNAME"
+    USE_SSL=$(config_get "$config" "use_ssl")
+    if [ "$USE_SSL" = "yes" ]; then
+      echo "  https://$D_HOSTNAME"
+    else
+      echo "  http://$D_HOSTNAME"
+    fi
   fi
 done
 echo

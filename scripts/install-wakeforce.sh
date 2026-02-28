@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Generates wakeforce services in docker-compose.yml.
-# Expects: CONFIGS array populated, docker-compose.yml with reverse-proxy already written.
+# Expects: CONFIGS array populated, docker-compose.yml started.
 # Requires: prompt(), config_get() from common.sh
+# Supports: standalone mode (WAKEFORCE_ONLY=true) with direct port mapping.
 
 # Prompt per domain for wakeforce settings, then for LICENSE_KEY.
 # Updates CONFIGS array with wakeforce fields.
@@ -13,9 +14,13 @@ prompt_wakeforce_domains() {
     local D_HOSTNAME
     D_HOSTNAME=$(config_get "$config" "hostname")
 
-    echo
     local enable_wf
-    enable_wf=$(prompt_optional ENABLE_WAKEFORCE "Enable Wakeforce for ${D_HOSTNAME}? (yes/no)" "yes")
+    if [ "$WAKEFORCE_ONLY" = true ]; then
+      enable_wf="yes"
+    else
+      echo
+      enable_wf=$(prompt_optional ENABLE_WAKEFORCE "Enable Wakeforce for ${D_HOSTNAME}? (yes/no)" "yes")
+    fi
 
     if [ "$enable_wf" = "yes" ]; then
       local mac broadcast lan_interface
@@ -115,8 +120,22 @@ write_wakeforce_services() {
     restart: unless-stopped
     volumes:
       - ${SERVICE_NAME}_license:/var/lib/wakeforce/license
+EOF
+
+    if [ "$WAKEFORCE_ONLY" = true ]; then
+      local wf_host_port=$((8182 + i))
+      cat >> docker-compose.yml <<EOF
+    ports:
+      - "${wf_host_port}:8182"
+EOF
+    else
+      cat >> docker-compose.yml <<EOF
     expose:
       - "8182"
+EOF
+    fi
+
+    cat >> docker-compose.yml <<EOF
     networks:
       internal: {}
       ${NETWORK_NAME}: {}
