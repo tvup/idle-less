@@ -50,7 +50,22 @@ prompt_wakeforce_domains() {
 
   if [ "$has_wf" = true ]; then
     echo
-    LICENSE_KEY=$(prompt LICENSE_KEY "Enter Wakeforce license key")
+    while true; do
+      LICENSE_KEY=$(prompt LICENSE_KEY "Enter Wakeforce license key")
+      echo "  Validating license..."
+      local result
+      result=$(curl -sf -X POST https://validate.torbenit.dk/api/v1/validate \
+        -H "Content-Type: application/json" \
+        -d "{\"licenseKey\":\"$LICENSE_KEY\",\"product\":\"wakeforce\"}" 2>/dev/null) || true
+      if echo "$result" | grep -q '"ok":true'; then
+        echo "  ✅ License validated"
+        break
+      else
+        local msg
+        msg=$(echo "$result" | grep -o '"message":"[^"]*"' | cut -d'"' -f4)
+        echo "  ❌ ${msg:-License validation failed}. Try again."
+      fi
+    done
   fi
 }
 
