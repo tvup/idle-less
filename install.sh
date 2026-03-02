@@ -313,6 +313,7 @@ EOF
       D_WF_IP=$(config_get "$config" "wf_ip")
       cat >> .env <<EOF
 ${PREFIX}_CONFIG=$D_CONFIG_TYPE
+${PREFIX}_IDLE_SERVICE=wakeforce_${DOMAIN_NUM}:8182
 ${PREFIX}_MAC=$D_MAC
 ${PREFIX}_BROADCAST=$D_BROADCAST
 ${PREFIX}_LAN=$D_LAN

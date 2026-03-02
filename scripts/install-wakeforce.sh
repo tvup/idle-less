@@ -54,7 +54,7 @@ prompt_wakeforce_domains() {
       wf_ip=$(prompt WF_IP "Static IP for Wakeforce container on LAN (must be unused)" "$default_wf_ip")
 
       # Append wakeforce fields to config JSON
-      updated_configs+=("${config%\}},\"enable_wakeforce\":\"yes\",\"config_type\":\"backend\",\"mac\":\"$mac\",\"broadcast\":\"$broadcast\",\"lan_interface\":\"$lan_interface\",\"subnet\":\"$subnet\",\"gateway\":\"$gateway\",\"wf_ip\":\"$wf_ip\"}")
+      updated_configs+=("${config%\}},\"enable_wakeforce\":\"yes\",\"config_type\":\"wakeforce\",\"mac\":\"$mac\",\"broadcast\":\"$broadcast\",\"lan_interface\":\"$lan_interface\",\"subnet\":\"$subnet\",\"gateway\":\"$gateway\",\"wf_ip\":\"$wf_ip\"}")
     else
       updated_configs+=("${config%\}},\"enable_wakeforce\":\"no\",\"config_type\":\"default\"}")
     fi

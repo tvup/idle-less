@@ -2,6 +2,16 @@
 
 All notable changes to idle-less are documented here.
 
+## [1.9.0] - 2026-03-02
+
+### Added
+- Wakeforce health check endpoint (`/__gateway/api/health.php`) with Docker HEALTHCHECK
+- `DOMAIN_{i}_IDLE_SERVICE` environment variable auto-configured during installation
+
+### Fixed
+- **Critical**: WoL routing broken — installer set `DOMAIN_CONFIG=backend` but nginx expects `wakeforce` for gateway redirect locations
+- `DOMAIN_IDLE_SERVICE` was never written to `.env`, preventing reverse-proxy from redirecting to Wakeforce on backend errors
+
 ## [1.8.0] - 2026-03-02
 
 ### Added
