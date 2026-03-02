@@ -2,6 +2,11 @@
 
 All notable changes to idle-less are documented here.
 
+## [2.4.0] - 2026-03-02
+
+### Changed
+- **Live checkout links**: Landing page buy buttons now point to real LemonSqueezy checkout (Personal, Pro, Business)
+
 ## [2.1.0] - 2026-03-02
 
 ### Added

@@ -105,11 +105,39 @@ Multiple domains are supported via the `DOMAIN_{i}_*` pattern.
     └───────────┘     └─────────────┘
 ```
 
+## Power savings
+
+A typical homelab server draws 100-200W when idle. With idle-less, it sleeps when not in use:
+
+| | Without idle-less | With idle-less |
+|--|---|---|
+| Idle draw | ~120W (server) | ~5W (Raspberry Pi) |
+| Annual cost (@ €0.30/kWh) | €315/year | €13/year |
+| **Savings** | | **~€300/year** |
+
+The Wakeforce license pays for itself within weeks.
+
+## Pricing
+
+The reverse proxy is **free and open source** (MIT license).
+
+The Wakeforce Wake-on-LAN gateway requires a one-time license:
+
+| Tier | Price | Servers |
+|------|-------|---------|
+| Personal | €29 | Up to 2 |
+| Pro | €79 | Up to 10 |
+| Business | €199 | Unlimited |
+
+One-time payment. No subscription. License key delivered instantly.
+
+**[Buy a license →](https://tvup.github.io/idle-less/#pricing)**
+
 ## License
 
 This repository (install scripts, configuration tools, and documentation) is licensed under [MIT](LICENSE).
 
-The **Wakeforce** Docker image (`tvup/wakeforce`) is separately licensed and requires a license key. Contact [info@torbenit.dk](mailto:info@torbenit.dk) for Wakeforce licensing.
+The **Wakeforce** Docker image (`tvup/wakeforce`) requires a [license key](https://tvup.github.io/idle-less/#pricing).
 
 ## Links
 

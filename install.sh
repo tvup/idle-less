@@ -415,3 +415,12 @@ echo "To stop:      docker compose down"
 echo
 echo "Documentation: https://github.com/tvup/idle-less"
 echo "Support:       info@torbenit.dk"
+
+if [ "$ENABLE_WAKEFORCE" != true ]; then
+  echo
+  echo "┌────────────────────────────────────────────────┐"
+  echo "│  Want your servers to sleep and wake on demand? │"
+  echo "│  Add Wakeforce: bash install.sh --wakeforce     │"
+  echo "│  Learn more: https://tvup.github.io/idle-less/  │"
+  echo "└────────────────────────────────────────────────┘"
+fi
