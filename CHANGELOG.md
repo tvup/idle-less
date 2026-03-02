@@ -2,6 +2,19 @@
 
 All notable changes to idle-less are documented here.
 
+## [1.7.0] - 2026-03-02
+
+### Added
+- MIT license for open-source components (install scripts, docs, configuration)
+- Contributing guide (CONTRIBUTING.md) for community engagement
+- Mobile hamburger menu on landing page
+- Links section in README with landing page, demo, changelog, and security policy
+
+### Fixed
+- Corrected `DOMAIN_1_CONFIG` example in README from invalid "wakeforce" to correct "backend"
+- Pre-filled Wakeforce inquiry email with qualifying questions (use case, server count)
+- Bottom CTA differentiated from pricing CTA (free GitHub start vs contact)
+
 ## [1.6.1] - 2026-03-02
 
 ### Added
