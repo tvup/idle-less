@@ -67,7 +67,7 @@ DOMAIN_1_HOSTNAME=app.example.com
 DOMAIN_1_IP=192.168.1.50
 DOMAIN_1_PORT=3080
 DOMAIN_1_USE_SSL=yes
-DOMAIN_1_CONFIG=wakeforce
+DOMAIN_1_CONFIG=backend
 DOMAIN_1_MAC=D8:9E:F3:12:D0:10
 DOMAIN_1_BROADCAST=192.168.1.255
 ```
@@ -98,6 +98,13 @@ Multiple domains are supported via the `DOMAIN_{i}_*` pattern.
 The **reverse proxy** is open source and free to use.
 
 **Wakeforce** (the Wake-on-LAN gateway) requires a license key. Contact [info@torbenit.dk](mailto:info@torbenit.dk) for licensing.
+
+## Links
+
+- [Landing page](https://tvup.github.io/idle-less/) — product overview and pricing
+- [Live demo](https://tvup.github.io/idle-less/demo.html) — simulated Wakeforce boot sequence
+- [Changelog](CHANGELOG.md) — release history and what's new
+- [Security policy](SECURITY.md) — vulnerability reporting
 
 ---
 

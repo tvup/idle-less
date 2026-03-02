@@ -516,9 +516,34 @@
 
         footer strong { color: var(--text); font-weight: 600; }
 
+        /* Mobile menu */
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
         /* Responsive */
         @media (max-width: 640px) {
-            .nav-links a:not(.btn) { display: none; }
+            .nav-toggle { display: block; }
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background: rgba(15, 23, 42, 0.95);
+                backdrop-filter: blur(12px);
+                padding: 16px 24px;
+                border-bottom: 1px solid var(--border);
+                gap: 12px;
+            }
+            .nav-links.open { display: flex; }
             .hero { padding: 120px 20px 60px; }
             section { padding: 60px 20px; }
             .pricing-grid { grid-template-columns: 1fr; }
@@ -531,6 +556,7 @@
 <nav>
     <div class="nav-inner">
         <div class="nav-brand">idle-less</div>
+        <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">&#9776;</button>
         <div class="nav-links">
             <a href="#how">How it works</a>
             <a href="#features">Features</a>
