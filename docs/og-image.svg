@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#93c5fd"/>
+      <stop offset="50%" style="stop-color:#60a5fa"/>
+      <stop offset="100%" style="stop-color:#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="4" fill="url(#blue)"/>
+  <text x="100" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="800" fill="#e2e8f0">Your servers sleep.</text>
+  <text x="100" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="800" fill="url(#blue)">Traffic wakes them.</text>
+  <text x="100" y="380" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#94a3b8">Docker reverse proxy with automatic Wake-on-LAN.</text>
+  <text x="100" y="420" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#94a3b8">Servers boot on demand. Zero idle power.</text>
+  <rect x="100" y="480" width="180" height="50" rx="10" fill="#3b82f6"/>
+  <text x="142" y="513" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="white">Get Started</text>
+  <text x="100" y="590" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="700" fill="#60a5fa">idle-less</text>
+  <text x="243" y="590" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#64748b">by Torben IT ApS</text>
+</svg>

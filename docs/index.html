@@ -13,11 +13,18 @@
     <meta property="og:description" content="A Docker-based reverse proxy with built-in Wake-on-LAN. Visitors hit your domain, the server boots automatically, and traffic flows.">
     <meta property="og:url" content="https://tvup.github.io/idle-less/">
     <meta property="og:site_name" content="idle-less">
+    <meta property="og:image" content="https://tvup.github.io/idle-less/og-image.svg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="idle-less — Wake your servers on demand">
     <meta name="twitter:description" content="Docker reverse proxy with automatic Wake-on-LAN. Servers sleep until needed.">
+    <meta name="twitter:image" content="https://tvup.github.io/idle-less/og-image.svg">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://tvup.github.io/idle-less/">
 
     <!-- Keywords for SEO -->
     <meta name="keywords" content="wake-on-lan, reverse proxy, docker, nginx, server management, homelab, self-hosted, power management, raspberry pi, wol">
@@ -50,6 +57,46 @@
           "price": "0",
           "priceCurrency": "EUR",
           "description": "Contact for pricing"
+        }
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Wake-on-LAN and how does idle-less use it?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Wake-on-LAN (WoL) is a network standard that allows a powered-off computer to be turned on by a network message called a 'magic packet'. idle-less uses WoL to automatically wake sleeping servers when web traffic arrives at your domain — no manual intervention needed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does my server support Wake-on-LAN?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most modern servers, desktops, and NAS devices support WoL. You need to enable it in the BIOS/UEFI settings (usually under Power Management) and in the OS network adapter settings. The server must be connected via Ethernet — WiFi does not support WoL."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does it take for a server to wake up?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Typical boot times range from 15-60 seconds depending on the server hardware and OS. During this time, visitors see a professional waiting screen with a real-time progress indicator. Once the server is ready, they are seamlessly redirected."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can idle-less run on a Raspberry Pi?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes! idle-less provides native ARM64 Docker images specifically built for Raspberry Pi. A Pi 4 or newer is recommended as the always-on gateway — it draws only about 5W of power while keeping all your domains reachable."
+          }
         }
       ]
     }
@@ -665,8 +712,8 @@
     <h2>Ready to let your servers rest?</h2>
     <p>Deploy idle-less in minutes. Your servers sleep, your power bill drops, and your visitors never notice.</p>
     <div class="hero-buttons">
-        <a href="mailto:info@torbenit.dk?subject=Wakeforce%20License" class="btn btn-primary">Get Wakeforce</a>
-        <a href="https://github.com/tvup/idle-less" class="btn btn-outline">View source</a>
+        <a href="https://github.com/tvup/idle-less" class="btn btn-primary">Get started free</a>
+        <a href="mailto:info@torbenit.dk?subject=Wakeforce%20License%20Inquiry&body=Hi%2C%0A%0AI%27m%20interested%20in%20a%20Wakeforce%20license.%0A%0AUse%20case%3A%20%0ANumber%20of%20servers%3A%20%0A" class="btn btn-outline">Contact us about Wakeforce</a>
     </div>
 </div>
 

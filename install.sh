@@ -67,7 +67,7 @@ setup_domain() {
   local hostname port ip use_https use_ssl certs_host_path
 
   if [ "$is_primary" = "yes" ]; then
-    hostname="${DOMAIN_1_HOSTNAME:-$(prompt HOSTNAME "Enter hostname" "chat.christianogfars.online")}"
+    hostname="${DOMAIN_1_HOSTNAME:-$(prompt HOSTNAME "Enter hostname" "app.example.com")}"
   else
     hostname=$(prompt HOSTNAME "Enter hostname" "")
   fi
