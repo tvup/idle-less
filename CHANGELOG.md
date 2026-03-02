@@ -2,6 +2,12 @@
 
 All notable changes to idle-less are documented here.
 
+## [1.7.1] - 2026-03-02
+
+### Added
+- Interactive power savings calculator on landing page (shows annual EUR/kWh savings)
+- Smooth scroll behavior for anchor navigation
+
 ## [1.7.0] - 2026-03-02
 
 ### Added
