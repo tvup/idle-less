@@ -41,7 +41,7 @@ All notable changes to idle-less are documented here.
 - Links section in README with landing page, demo, changelog, and security policy
 
 ### Fixed
-- Corrected `DOMAIN_1_CONFIG` example in README from invalid "wakeforce" to correct "backend"
+- Updated `DOMAIN_1_CONFIG` example in README (see v1.9.0 for correct value: `wakeforce`)
 - Pre-filled Wakeforce inquiry email with qualifying questions (use case, server count)
 - Bottom CTA differentiated from pricing CTA (free GitHub start vs contact)
 
