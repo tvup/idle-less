@@ -95,9 +95,9 @@ Multiple domains are supported via the `DOMAIN_{i}_*` pattern.
 
 ## License
 
-The **reverse proxy** is open source and free to use.
+This repository (install scripts, configuration tools, and documentation) is licensed under [MIT](LICENSE).
 
-**Wakeforce** (the Wake-on-LAN gateway) requires a license key. Contact [info@torbenit.dk](mailto:info@torbenit.dk) for licensing.
+The **Wakeforce** Docker image (`tvup/wakeforce`) is separately licensed and requires a license key. Contact [info@torbenit.dk](mailto:info@torbenit.dk) for Wakeforce licensing.
 
 ## Links
 
