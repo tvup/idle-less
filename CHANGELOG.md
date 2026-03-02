@@ -2,6 +2,36 @@
 
 All notable changes to idle-less are documented here.
 
+## [1.10.0] - 2026-03-02
+
+### Added
+- Quick Start section on landing page with one-click install commands
+- Visual FAQ section with 4 expandable questions (WoL basics, server support, wake times, Raspberry Pi)
+- Container smoke test in CI (builds and health-checks reverse-proxy)
+- Install script `--help` validation in CI
+
+### Changed
+- CI workflow now triggers on `docker/**` file changes
+
+## [1.9.2] - 2026-03-02
+
+### Security
+- Replaced `eval` with bash indirect variable expansion in reverse-proxy entrypoint (eliminates shell injection vector)
+
+### Documentation
+- Added variable mapping table to Wakeforce Docker Hub README
+- Corrected misleading CHANGELOG entry about DOMAIN_CONFIG values
+
+## [1.9.1] - 2026-03-02
+
+### Fixed
+- Removed hardcoded personal domain (`chat.christianogfars.online`) from Wakeforce PHP files
+- Added temp file cleanup trap to reverse-proxy entrypoint
+- nginx config test now outputs generated config on failure for debugging
+
+### Changed
+- All Danish code comments translated to English
+
 ## [1.9.0] - 2026-03-02
 
 ### Added

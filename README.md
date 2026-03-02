@@ -1,5 +1,9 @@
 # idle-less
 
+[![Docker Pulls (reverse-proxy)](https://img.shields.io/docker/pulls/tvup/reverse-proxy?label=reverse-proxy%20pulls)](https://hub.docker.com/r/tvup/reverse-proxy)
+[![Docker Pulls (wakeforce)](https://img.shields.io/docker/pulls/tvup/wakeforce?label=wakeforce%20pulls)](https://hub.docker.com/r/tvup/wakeforce)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **Your servers sleep. Traffic wakes them.**
 
 A Docker-based reverse proxy with built-in Wake-on-LAN. Visitors hit your domain, the server boots automatically, and traffic flows — all in seconds.
