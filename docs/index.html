@@ -771,7 +771,7 @@
         <p>The reverse proxy is free. Wakeforce — the Wake-on-LAN gateway — requires a license.</p>
     </div>
 
-    <div class="pricing-grid">
+    <div class="pricing-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); max-width: 900px; margin: 0 auto;">
         <div class="price-card">
             <h3>Reverse Proxy</h3>
             <div class="price">Free</div>
@@ -786,22 +786,48 @@
             <a href="https://github.com/tvup/idle-less" class="btn btn-outline">Get started</a>
         </div>
 
-        <div class="price-card featured">
-            <div class="price-badge">Most popular</div>
-            <h3>Wakeforce</h3>
-            <div class="price">Contact us</div>
-            <p class="price-desc">Wake-on-LAN gateway for your servers</p>
+        <div class="price-card">
+            <h3>Personal</h3>
+            <div class="price">&euro;29</div>
+            <p class="price-desc">One-time payment, 1-2 servers</p>
             <ul class="price-features">
                 <li>Everything in Free</li>
                 <li>Automatic Wake-on-LAN</li>
                 <li>Professional waiting screen</li>
-                <li>Real-time health monitoring</li>
-                <li>Multi-server WoL support</li>
-                <li>License key activation</li>
+                <li>Health monitoring</li>
+                <li>2 activations</li>
             </ul>
-            <a href="mailto:info@torbenit.dk?subject=Wakeforce%20License" class="btn btn-primary">Get a license</a>
+            <a href="https://tvup.lemonsqueezy.com/buy/personal" class="btn btn-primary" id="buy-personal">Buy now</a>
+        </div>
+
+        <div class="price-card featured">
+            <div class="price-badge">Most popular</div>
+            <h3>Pro</h3>
+            <div class="price">&euro;79</div>
+            <p class="price-desc">One-time payment, up to 10 servers</p>
+            <ul class="price-features">
+                <li>Everything in Personal</li>
+                <li>Multi-server WoL</li>
+                <li>10 activations</li>
+                <li>Priority email support</li>
+            </ul>
+            <a href="https://tvup.lemonsqueezy.com/buy/pro" class="btn btn-primary" id="buy-pro">Buy now</a>
+        </div>
+
+        <div class="price-card">
+            <h3>Business</h3>
+            <div class="price">&euro;199</div>
+            <p class="price-desc">One-time payment, unlimited</p>
+            <ul class="price-features">
+                <li>Everything in Pro</li>
+                <li>Unlimited activations</li>
+                <li>Priority support</li>
+                <li>Invoice with VAT</li>
+            </ul>
+            <a href="https://tvup.lemonsqueezy.com/buy/business" class="btn btn-primary" id="buy-business">Buy now</a>
         </div>
     </div>
+    <p style="text-align:center;margin-top:16px;color:var(--text-dim);font-size:13px;">All prices exclude VAT. Secure checkout via LemonSqueezy. License key delivered instantly by email.</p>
 </section>
 
 <!-- FAQ -->
@@ -835,7 +861,7 @@
     <p>Deploy idle-less in minutes. Your servers sleep, your power bill drops, and your visitors never notice.</p>
     <div class="hero-buttons">
         <a href="https://github.com/tvup/idle-less" class="btn btn-primary">Get started free</a>
-        <a href="mailto:info@torbenit.dk?subject=Wakeforce%20License%20Inquiry&body=Hi%2C%0A%0AI%27m%20interested%20in%20a%20Wakeforce%20license.%0A%0AUse%20case%3A%20%0ANumber%20of%20servers%3A%20%0A" class="btn btn-outline">Contact us about Wakeforce</a>
+        <a href="#pricing" class="btn btn-outline">Buy Wakeforce license</a>
     </div>
 </div>
 

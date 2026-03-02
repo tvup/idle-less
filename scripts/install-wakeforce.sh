@@ -74,17 +74,27 @@ prompt_wakeforce_domains() {
 
   if [ "$has_wf" = true ]; then
     echo
+    echo "  Get a license key at: https://tvup.github.io/idle-less/#pricing"
+    echo
     while true; do
       LICENSE_KEY=$(prompt LICENSE_KEY "Enter Wakeforce license key")
       echo "  Validating license..."
       local result
-      result=$(curl -sf -X POST https://validate.torbenit.dk/api/v1/validate \
-        -H "Content-Type: application/json" \
-        -d "{\"licenseKey\":\"$LICENSE_KEY\",\"product\":\"wakeforce\"}" 2>/dev/null) || true
-      if echo "$result" | grep -q '"ok":true'; then
+      result=$(curl -sf -X POST https://api.lemonsqueezy.com/v1/licenses/validate \
+        -H "Accept: application/json" \
+        -d "license_key=$LICENSE_KEY" 2>/dev/null) || true
+      if echo "$result" | grep -q '"valid":true'; then
         echo "  ✅ License validated"
         break
       else
+        # Fallback: try custom validation server
+        result=$(curl -sf -X POST https://validate.torbenit.dk/api/v1/validate \
+          -H "Content-Type: application/json" \
+          -d "{\"licenseKey\":\"$LICENSE_KEY\",\"product\":\"wakeforce\"}" 2>/dev/null) || true
+        if echo "$result" | grep -q '"ok":true'; then
+          echo "  ✅ License validated"
+          break
+        fi
         local msg
         msg=$(echo "$result" | grep -o '"message":"[^"]*"' | cut -d'"' -f4)
         echo "  ❌ ${msg:-License validation failed}. Try again."
