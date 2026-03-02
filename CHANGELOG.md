@@ -2,6 +2,20 @@
 
 All notable changes to idle-less are documented here.
 
+## [1.8.0] - 2026-03-02
+
+### Added
+- Health check endpoint (`/health` on port 8080) with Docker HEALTHCHECK
+- `--help` / `-h` flag for install script with usage documentation
+- IP address validation during installation
+- Custom 404 page for GitHub Pages ("This server is sleeping")
+
+### Changed
+- Wakeforce splash page: professional status messages replacing casual text
+- Wakeforce about.php: removed broken AI endpoint and debug features
+- Wakeforce CSS: deduplicated (842 → 200 lines)
+- Changed `lang="da"` to `lang="en"` across Wakeforce pages
+
 ## [1.7.1] - 2026-03-02
 
 ### Added

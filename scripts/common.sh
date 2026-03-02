@@ -46,6 +46,20 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || { echo "❌ Missing $1"; exit 1; }
 }
 
+# Validate IPv4 address format
+validate_ip() {
+  local ip="$1"
+  if [[ "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+    local IFS='.'
+    read -ra octets <<< "$ip"
+    for octet in "${octets[@]}"; do
+      [ "$octet" -gt 255 ] && return 1
+    done
+    return 0
+  fi
+  return 1
+}
+
 check_file() {
   local file="$1"
   if [ -f "$file" ] && [ -r "$file" ]; then

@@ -10,6 +10,22 @@ for arg in "$@"; do
   case $arg in
     --wakeforce) ENABLE_WAKEFORCE=true ;;
     --wakeforce-only) ENABLE_WAKEFORCE=true; WAKEFORCE_ONLY=true ;;
+    --help|-h)
+      echo "Usage: bash install.sh [OPTIONS]"
+      echo ""
+      echo "Options:"
+      echo "  --wakeforce       Install reverse proxy + Wake-on-LAN gateway"
+      echo "  --wakeforce-only  Install Wake-on-LAN gateway only (no reverse proxy)"
+      echo "  --help, -h        Show this help message"
+      echo ""
+      echo "Examples:"
+      echo "  bash install.sh                  # Reverse proxy only"
+      echo "  bash install.sh --wakeforce      # Full setup with WoL"
+      echo "  bash install.sh --wakeforce-only # WoL gateway standalone"
+      echo ""
+      echo "Documentation: https://github.com/tvup/idle-less"
+      exit 0
+      ;;
   esac
 done
 
@@ -80,6 +96,11 @@ setup_domain() {
   fi
 
   ip=$(prompt IP "Enter backend IP" "192.168.1.22")
+
+  if ! validate_ip "$ip"; then
+    echo "❌ Invalid IP address: $ip" >&2
+    return 1
+  fi
 
   if [ "$WAKEFORCE_ONLY" = true ]; then
     use_https="no"

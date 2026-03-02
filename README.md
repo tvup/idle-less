@@ -34,6 +34,13 @@ The interactive installer will guide you through:
 - Wakeforce Wake-on-LAN settings
 - Docker Compose generation
 
+### Docker images
+
+```bash
+docker pull tvup/reverse-proxy:latest
+docker pull tvup/wakeforce:latest
+```
+
 ### Installation modes
 
 | Mode | Command | Description |

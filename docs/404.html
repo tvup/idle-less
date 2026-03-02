@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Page not found — idle-less</title>
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" type="image/svg+xml" href="/idle-less/favicon.svg">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: rgba(226, 232, 240, 0.92);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .container {
+            text-align: center;
+            max-width: 480px;
+        }
+        .code {
+            font-size: 120px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #93c5fd 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.05em;
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        p {
+            font-size: 16px;
+            color: rgba(148, 163, 184, 0.85);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+        a {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 10px;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+        }
+        a:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="code">404</div>
+        <h1>This server is sleeping</h1>
+        <p>The page you're looking for doesn't exist — but our servers wake on demand.</p>
+        <a href="/idle-less/">Back to idle-less</a>
+    </div>
+</body>
+</html>
