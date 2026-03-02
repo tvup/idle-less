@@ -47,16 +47,30 @@
       "offers": [
         {
           "@type": "Offer",
-          "name": "Reverse Proxy",
+          "name": "Reverse Proxy (Free)",
           "price": "0",
           "priceCurrency": "EUR"
         },
         {
           "@type": "Offer",
-          "name": "Wakeforce License",
-          "price": "0",
+          "name": "Wakeforce Personal",
+          "price": "29",
           "priceCurrency": "EUR",
-          "description": "Contact for pricing"
+          "description": "One-time payment, 2 server activations"
+        },
+        {
+          "@type": "Offer",
+          "name": "Wakeforce Pro",
+          "price": "79",
+          "priceCurrency": "EUR",
+          "description": "One-time payment, 10 server activations"
+        },
+        {
+          "@type": "Offer",
+          "name": "Wakeforce Business",
+          "price": "199",
+          "priceCurrency": "EUR",
+          "description": "One-time payment, unlimited activations"
         }
       ]
     }
@@ -725,6 +739,7 @@
             <div style="font-size:14px;color:var(--text-dim);margin-bottom:4px;">Annual savings</div>
             <div id="calcResult" style="font-size:36px;font-weight:800;color:var(--success);letter-spacing:-0.03em;"></div>
             <div id="calcKwh" style="font-size:14px;color:var(--text-dim);margin-top:4px;"></div>
+            <div id="calcPayback" style="font-size:14px;color:var(--primary-light);margin-top:8px;font-weight:600;"></div>
         </div>
     </div>
 
@@ -739,6 +754,12 @@
         const eurSaved = kwhSaved * c;
         document.getElementById('calcResult').textContent = '\u20AC' + eurSaved.toFixed(0) + '/year';
         document.getElementById('calcKwh').textContent = kwhSaved.toFixed(0) + ' kWh saved per year';
+        const daysPayback = eurSaved > 0 ? Math.ceil(29 / (eurSaved / 365)) : 0;
+        if (daysPayback > 0 && daysPayback < 365) {
+            document.getElementById('calcPayback').textContent = 'Wakeforce pays for itself in ' + daysPayback + ' days';
+        } else {
+            document.getElementById('calcPayback').textContent = '';
+        }
     }
     document.querySelectorAll('#calcWatts,#calcHours,#calcCost,#calcGateway').forEach(el => el.addEventListener('input', calcSavings));
     calcSavings();
@@ -828,6 +849,12 @@
         </div>
     </div>
     <p style="text-align:center;margin-top:16px;color:var(--text-dim);font-size:13px;">All prices exclude VAT. Secure checkout via LemonSqueezy. License key delivered instantly by email.</p>
+    <div style="display:flex;justify-content:center;gap:32px;margin-top:24px;flex-wrap:wrap;">
+        <div style="text-align:center;font-size:13px;color:var(--text-dim);"><span style="display:block;font-size:22px;margin-bottom:4px;">&#128274;</span>Secure checkout</div>
+        <div style="text-align:center;font-size:13px;color:var(--text-dim);"><span style="display:block;font-size:22px;margin-bottom:4px;">&#9889;</span>Instant delivery</div>
+        <div style="text-align:center;font-size:13px;color:var(--text-dim);"><span style="display:block;font-size:22px;margin-bottom:4px;">&#8734;</span>No subscription</div>
+        <div style="text-align:center;font-size:13px;color:var(--text-dim);"><span style="display:block;font-size:22px;margin-bottom:4px;">&#9993;</span>Email support</div>
+    </div>
 </section>
 
 <!-- FAQ -->

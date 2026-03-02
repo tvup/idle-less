@@ -2,6 +2,19 @@
 
 All notable changes to idle-less are documented here.
 
+## [2.1.0] - 2026-03-02
+
+### Added
+- **License gate**: Wakeforce container now starts even without a valid license, showing a professional "license required" page with purchase CTA instead of crashing
+- API endpoints return `403` with pricing URL when license is missing/invalid
+- "Pays for itself" ROI message in savings calculator (links to Wakeforce pricing)
+- Trust signals under pricing section (secure checkout, instant delivery, no subscription)
+- Schema.org structured data updated with all 4 pricing tiers
+
+### Changed
+- Entrypoint no longer crashes on license failure — writes status file and starts Apache in limited mode
+- Missing LICENSE_KEY now logs as INFO instead of ERROR
+
 ## [1.10.0] - 2026-03-02
 
 ### Added
