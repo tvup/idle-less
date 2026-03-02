@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Wakeforce Demo — idle-less</title>
+    <meta name="theme-color" content="#111827">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-light: #60a5fa;
+            --success: #10b981;
+            --error: #ef4444;
+            --glow: rgba(59, 130, 246, 0.5);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 24px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: rgba(226, 232, 240, 0.92);
+        }
+
+        .back {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            color: rgba(148, 163, 184, 0.7);
+            text-decoration: none;
+            font-size: 14px;
+            z-index: 10;
+        }
+        .back:hover { color: var(--primary-light); }
+
+        .demo-badge {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--primary-light);
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        .card {
+            max-width: 820px;
+            margin: 40px auto 0;
+            padding: 32px;
+            border: 1px solid rgba(148,163,184,.18);
+            border-radius: 20px;
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 60px rgba(0,0,0,.35);
+        }
+
+        .hero { text-align: center; margin-bottom: 32px; }
+
+        .logo {
+            font-size: 40px;
+            font-weight: 750;
+            background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 45%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+            margin: 0;
+            display: inline-block;
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.18));
+        }
+
+        .tagline {
+            font-size: 18px;
+            color: rgba(255,255,255,0.7);
+            margin: 12px 0 0;
+        }
+
+        .loader-section { margin: 32px 0; text-align: center; }
+
+        .spinner-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+        }
+
+        .spinner {
+            width: 100%; height: 100%;
+            border: 4px solid rgba(59,130,246,0.1);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .spinner-inner {
+            position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px;
+            border: 3px solid rgba(96,165,250,0.1);
+            border-top: 3px solid var(--primary-light);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite reverse;
+        }
+
+        .spinner-core {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px; height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--glow);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.6; }
+        }
+
+        .progress-container {
+            width: 100%; height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 24px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 3px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px var(--glow);
+            width: 0%;
+        }
+
+        .row {
+            display: flex; gap: 12px; align-items: center;
+            margin-top: 12px; flex-wrap: wrap; justify-content: center;
+        }
+
+        .pill {
+            padding: 8px 14px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,.2);
+            background: rgba(255,255,255,0.05);
+            font-size: 13px; color: rgba(255,255,255,0.9);
+        }
+        .pill.ok { border-color: rgba(16,185,129,.5); background: rgba(16,185,129,0.1); color: #10b981; }
+
+        #status {
+            margin: 16px 0; color: rgba(255,255,255,0.8);
+            font-size: 16px; text-align: center;
+        }
+
+        .log-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-top: 24px; margin-bottom: 10px;
+        }
+
+        .log-title {
+            font-size: 12px; letter-spacing: .08em;
+            text-transform: uppercase; color: rgba(148,163,184,.9);
+        }
+
+        .badges { display: flex; gap: 8px; }
+
+        .badge {
+            font-size: 12px; padding: 6px 10px;
+            border-radius: 999px; border: 1px solid rgba(148,163,184,.22);
+            color: rgba(226,232,240,.9); background: rgba(255,255,255,.04);
+        }
+        .badge.ok { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.10); color: rgba(167,243,208,1); }
+        .badge.warn { border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.10); color: rgba(253,230,138,1); }
+
+        .log {
+            margin-top: 12px; padding: 16px; border-radius: 12px;
+            background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.1);
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 13px; line-height: 1.8;
+            color: rgba(255,255,255,0.8); max-height: 300px; overflow-y: auto;
+        }
+
+        .log-entry {
+            display: flex; gap: 10px; align-items: baseline; margin: 6px 0;
+        }
+        .log-ts { color: rgba(148,163,184,.55); font-size: 11px; }
+        .log-level { width: 56px; font-weight: 700; font-size: 11px; color: rgba(148,163,184,.9); }
+        .log-comp { width: 100px; color: rgba(96,165,250,.95); }
+        .log-msg { flex: 1; color: rgba(226,232,240,.92); }
+
+        .footer {
+            margin-top: 22px; padding-top: 14px;
+            border-top: 1px solid rgba(148,163,184,.18);
+            display: flex; justify-content: space-between; flex-wrap: wrap;
+            font-size: 12px; color: rgba(148,163,184,.85);
+        }
+        .footer strong { color: rgba(226,232,240,.92); font-weight: 650; }
+    </style>
+</head>
+
+<body>
+
+<a href="./" class="back">&larr; Back to idle-less</a>
+<div class="demo-badge">DEMO MODE</div>
+
+<div class="card">
+    <div class="hero">
+        <h1 class="logo">WAKEFORCE Deployment in Progress</h1>
+        <p class="tagline">Automated recovery and optimization is running</p>
+    </div>
+
+    <div class="loader-section">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-inner"></div>
+            <div class="spinner-core"></div>
+        </div>
+
+        <div class="progress-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <div class="row">
+            <span class="pill" id="pollMeta">Next check in —</span>
+            <span class="pill" id="pollCount">Checks: 0</span>
+            <span class="pill" id="elapsed">Elapsed: 0s</span>
+        </div>
+    </div>
+
+    <p id="status"><span id="pill" class="pill">Initializing...</span></p>
+
+    <div class="log-header">
+        <div class="log-title">Deployment log</div>
+        <div class="badges">
+            <span id="bHealth" class="badge">health</span>
+            <span id="bWol" class="badge">wake</span>
+            <span id="bProbe" class="badge">probe</span>
+        </div>
+    </div>
+
+    <div id="log" class="log"></div>
+
+    <footer class="footer">
+        <div><strong>Torben IT ApS</strong> &middot; CVR 39630605</div>
+        <div>&copy; <script>document.write(new Date().getFullYear())</script> Torben IT ApS. All rights reserved.</div>
+    </footer>
+</div>
+
+<script>
+    const log = document.getElementById('log');
+    const progress = document.getElementById('progressBar');
+    const pill = document.getElementById('pill');
+    const bHealth = document.getElementById('bHealth');
+    const bWol = document.getElementById('bWol');
+    const bProbe = document.getElementById('bProbe');
+    const pollMeta = document.getElementById('pollMeta');
+    const pollCount = document.getElementById('pollCount');
+    const elapsed = document.getElementById('elapsed');
+    const status = document.getElementById('status');
+
+    const startTime = Date.now();
+
+    function ts() { return new Date().toISOString().slice(11, 19); }
+
+    function addLog(level, comp, msg) {
+        const el = document.createElement('div');
+        el.className = 'log-entry';
+        el.innerHTML = `<span class="log-ts">[${ts()}]</span><span class="log-level">${level}</span><span class="log-comp">${comp}</span><span class="log-msg">${msg}</span>`;
+        log.appendChild(el);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function setBadge(el, cls) {
+        el.classList.remove('ok', 'warn');
+        if (cls) el.classList.add(cls);
+    }
+
+    // Simulated boot sequence
+    const steps = [
+        { t: 500,  fn: () => { addLog('INFO', 'gateway', 'Incoming request → https://app.example.com/'); progress.style.width = '5%'; } },
+        { t: 1200, fn: () => { addLog('INFO', 'orchestrator', 'Starting availability checks'); setBadge(bHealth, 'warn'); } },
+        { t: 2000, fn: () => { addLog('INFO', 'health', 'Origin state: offline'); pill.textContent = 'health checks...'; progress.style.width = '15%'; } },
+        { t: 2800, fn: () => { addLog('INFO', 'wake', 'Sending wake signal (WOL)'); setBadge(bWol, 'warn'); progress.style.width = '25%'; pill.textContent = 'knocking...'; } },
+        { t: 3500, fn: () => { addLog('INFO', 'wake', 'Magic packet sent to D8:9E:F3:12:D0:10'); setBadge(bWol, 'ok'); progress.style.width = '40%'; pollMeta.textContent = 'Next check in 2.0s'; pollCount.textContent = 'Check #1'; } },
+        { t: 5500, fn: () => { addLog('INFO', 'probe', 'Health recheck... (2)'); setBadge(bProbe, 'warn'); progress.style.width = '50%'; pollMeta.textContent = 'Next check in 2.4s'; pollCount.textContent = 'Check #2'; } },
+        { t: 7900, fn: () => { addLog('INFO', 'probe', 'Health recheck... (3)'); progress.style.width = '58%'; pollMeta.textContent = 'Next check in 2.9s'; pollCount.textContent = 'Check #3'; } },
+        { t: 10800, fn: () => { addLog('INFO', 'health', 'Origin state: booting'); progress.style.width = '68%'; pollMeta.textContent = 'Next check in 3.4s'; pollCount.textContent = 'Check #4'; pill.textContent = 'waiting...'; } },
+        { t: 14200, fn: () => { addLog('INFO', 'probe', 'Health recheck... (5)'); progress.style.width = '78%'; pollMeta.textContent = 'Next check in 4.1s'; pollCount.textContent = 'Check #5'; } },
+        { t: 18300, fn: () => { addLog('INFO', 'health', 'Origin state: online'); setBadge(bHealth, 'ok'); setBadge(bProbe, 'ok'); progress.style.width = '100%'; pollCount.textContent = 'Check #6'; } },
+        { t: 19000, fn: () => { addLog('INFO', 'gateway', 'Origin healthy — redirecting'); pill.textContent = 'ready'; pill.classList.add('ok'); pollMeta.textContent = 'Server is online'; status.innerHTML = '<span class="pill ok">Server is online — redirecting to app...</span>'; } },
+        { t: 21000, fn: () => {
+            // Restart demo
+            log.innerHTML = '';
+            progress.style.width = '0%';
+            pill.textContent = 'Initializing...';
+            pill.classList.remove('ok');
+            setBadge(bHealth, ''); setBadge(bWol, ''); setBadge(bProbe, '');
+            pollMeta.textContent = 'Next check in —';
+            pollCount.textContent = 'Checks: 0';
+            status.innerHTML = '<span id="pill" class="pill">Initializing...</span>';
+            runDemo();
+        }},
+    ];
+
+    function runDemo() {
+        steps.forEach(s => {
+            setTimeout(s.fn, s.t);
+        });
+    }
+
+    // Update elapsed timer
+    setInterval(() => {
+        elapsed.textContent = `Elapsed: ${Math.floor((Date.now() - startTime) / 1000)}s`;
+    }, 1000);
+
+    runDemo();
+</script>
+
+</body>
+</html>
