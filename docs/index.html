@@ -561,6 +561,7 @@
         <div class="nav-links">
             <a href="#how">How it works</a>
             <a href="#features">Features</a>
+            <a href="#quickstart">Quick start</a>
             <a href="#pricing">Pricing</a>
             <a href="https://github.com/tvup/idle-less" class="btn btn-outline">GitHub</a>
         </div>
@@ -744,6 +745,25 @@
     </script>
 </section>
 
+<!-- Quick Start -->
+<section id="quickstart">
+    <div class="section-title">
+        <h2>Get started in 60 seconds</h2>
+        <p>One command installs everything. Works on any Linux server with Docker.</p>
+    </div>
+    <div style="max-width:680px;margin:0 auto;text-align:left;">
+        <div style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:12px;padding:24px;font-family:'Courier New',monospace;font-size:14px;line-height:1.8;overflow-x:auto;">
+            <div style="color:var(--text-dim);margin-bottom:8px;"># Reverse proxy only (free)</div>
+            <div style="color:var(--success);">curl -fsSL https://raw.githubusercontent.com/tvup/idle-less/master/install.sh | bash</div>
+            <div style="color:var(--text-dim);margin:16px 0 8px;"># With Wake-on-LAN gateway (requires license)</div>
+            <div style="color:var(--success);">curl -fsSL https://raw.githubusercontent.com/tvup/idle-less/master/install.sh | bash -s -- --wakeforce</div>
+            <div style="color:var(--text-dim);margin:16px 0 8px;"># Start your services</div>
+            <div style="color:var(--success);">docker compose up -d</div>
+        </div>
+        <p style="text-align:center;margin-top:16px;color:var(--text-dim);font-size:14px;">The installer walks you through domain, SSL, and network configuration interactively.</p>
+    </div>
+</section>
+
 <!-- Pricing -->
 <section id="pricing">
     <div class="section-title">
@@ -781,6 +801,31 @@
             </ul>
             <a href="mailto:info@torbenit.dk?subject=Wakeforce%20License" class="btn btn-primary">Get a license</a>
         </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+    <div class="section-title">
+        <h2>Frequently asked questions</h2>
+    </div>
+    <div style="max-width:680px;margin:0 auto;text-align:left;">
+        <details style="margin-bottom:16px;border:1px solid var(--border);border-radius:10px;padding:0;">
+            <summary style="cursor:pointer;padding:16px 20px;font-weight:600;font-size:16px;list-style:none;display:flex;justify-content:space-between;align-items:center;">What is Wake-on-LAN and how does idle-less use it? <span style="font-size:20px;color:var(--text-dim);transition:transform 0.2s;">+</span></summary>
+            <div style="padding:0 20px 16px;color:var(--text-dim);line-height:1.7;">Wake-on-LAN (WoL) is a networking standard that allows a computer to be turned on by a network message (magic packet). idle-less uses its reverse proxy to detect when a backend server is unreachable, then sends a WoL magic packet via the Wakeforce gateway to boot the server — all while showing visitors a professional waiting screen.</div>
+        </details>
+        <details style="margin-bottom:16px;border:1px solid var(--border);border-radius:10px;padding:0;">
+            <summary style="cursor:pointer;padding:16px 20px;font-weight:600;font-size:16px;list-style:none;display:flex;justify-content:space-between;align-items:center;">Does my server support Wake-on-LAN? <span style="font-size:20px;color:var(--text-dim);transition:transform 0.2s;">+</span></summary>
+            <div style="padding:0 20px 16px;color:var(--text-dim);line-height:1.7;">Most modern servers, desktops, and NAS devices support WoL. You need to enable it in the BIOS/UEFI settings (look for "Wake on LAN", "Power On By PCI-E", or similar). The target machine must be connected via Ethernet — WiFi does not support WoL.</div>
+        </details>
+        <details style="margin-bottom:16px;border:1px solid var(--border);border-radius:10px;padding:0;">
+            <summary style="cursor:pointer;padding:16px 20px;font-weight:600;font-size:16px;list-style:none;display:flex;justify-content:space-between;align-items:center;">How long does it take for a server to wake up? <span style="font-size:20px;color:var(--text-dim);transition:transform 0.2s;">+</span></summary>
+            <div style="padding:0 20px 16px;color:var(--text-dim);line-height:1.7;">Typically 15-45 seconds depending on the hardware. During this time, visitors see a professional waiting screen with a real-time status indicator. Once the server responds to health checks, visitors are automatically redirected to the live site.</div>
+        </details>
+        <details style="margin-bottom:16px;border:1px solid var(--border);border-radius:10px;padding:0;">
+            <summary style="cursor:pointer;padding:16px 20px;font-weight:600;font-size:16px;list-style:none;display:flex;justify-content:space-between;align-items:center;">Can idle-less run on a Raspberry Pi? <span style="font-size:20px;color:var(--text-dim);transition:transform 0.2s;">+</span></summary>
+            <div style="padding:0 20px 16px;color:var(--text-dim);line-height:1.7;">Yes! Both Docker images support ARM64 natively. A Raspberry Pi 4 or 5 is the ideal always-on gateway — it uses about 3-5 watts while keeping your power-hungry servers sleeping until needed.</div>
+        </details>
     </div>
 </section>
 
