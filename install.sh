@@ -43,7 +43,10 @@ require_cmd curl
 require_cmd docker
 docker compose version >/dev/null 2>&1 || { echo "❌ Need docker compose (v2)"; exit 1; }
 
-echo "== Install the gøgemøg =="
+echo "╔══════════════════════════════════════╗"
+echo "║        idle-less installer           ║"
+echo "║  Reverse proxy + Wake-on-LAN        ║"
+echo "╚══════════════════════════════════════╝"
 echo
 
 # ── Domain prompts ──
@@ -284,11 +287,17 @@ EOF
       D_MAC=$(config_get "$config" "mac")
       D_BROADCAST=$(config_get "$config" "broadcast")
       D_LAN=$(config_get "$config" "lan_interface")
+      D_SUBNET=$(config_get "$config" "subnet")
+      D_GATEWAY=$(config_get "$config" "gateway")
+      D_WF_IP=$(config_get "$config" "wf_ip")
       cat >> .env <<EOF
 ${PREFIX}_CONFIG=$D_CONFIG_TYPE
 ${PREFIX}_MAC=$D_MAC
 ${PREFIX}_BROADCAST=$D_BROADCAST
 ${PREFIX}_LAN=$D_LAN
+${PREFIX}_SUBNET=${D_SUBNET:-192.168.1.0/24}
+${PREFIX}_GATEWAY=${D_GATEWAY:-192.168.1.1}
+${PREFIX}_WF_IP=${D_WF_IP:-192.168.1.240}
 EOF
     fi
   fi
@@ -334,9 +343,11 @@ for i in "${!CONFIGS[@]}"; do
     if [ "${D_ENABLE_WF:-}" = "yes" ]; then
       D_MAC=$(config_get "$config" "mac")
       D_BROADCAST=$(config_get "$config" "broadcast")
+      D_WF_IP=$(config_get "$config" "wf_ip")
       echo "  Wakeforce: Enabled"
       echo "  MAC: $D_MAC"
       echo "  Broadcast: $D_BROADCAST"
+      echo "  WF IP: ${D_WF_IP:-auto}"
     fi
   fi
   echo
@@ -376,5 +387,9 @@ for i in "${!CONFIGS[@]}"; do
   fi
 done
 echo
+echo "To start:     docker compose up -d"
 echo "To view logs: docker compose logs -f"
-echo "To stop: docker compose down"
+echo "To stop:      docker compose down"
+echo
+echo "Documentation: https://github.com/tvup/idle-less"
+echo "Support:       info@torbenit.dk"

@@ -23,14 +23,38 @@ prompt_wakeforce_domains() {
     fi
 
     if [ "$enable_wf" = "yes" ]; then
-      local mac broadcast lan_interface
+      local mac broadcast lan_interface subnet gateway wf_ip
       mac=$(prompt MAC "Enter MAC address for ${D_HOSTNAME} (e.g. D8:9E:F3:12:D0:10)" "D8:9E:F3:12:D0:10")
       broadcast=$(prompt BROADCAST "Enter broadcast IP for ${D_HOSTNAME} (e.g. 192.168.1.255)" "192.168.1.255")
+
+      # Detect default network interface and subnet
       lan_interface="$(ip route show default 2>/dev/null | awk '{print $5; exit}' | tr -d '[:space:]')"
       lan_interface="${lan_interface:-eth0}"
 
+      # Detect subnet and gateway from interface
+      local detected_subnet detected_gateway
+      detected_subnet="$(ip -o -4 addr show "$lan_interface" 2>/dev/null | awk '{print $4}' | head -1)"
+      detected_gateway="$(ip route show default 2>/dev/null | awk '{print $3; exit}' | tr -d '[:space:]')"
+
+      # Convert CIDR to network address for subnet (e.g. 192.168.1.15/24 → 192.168.1.0/24)
+      if [ -n "$detected_subnet" ]; then
+        local ip_part cidr_part
+        ip_part="${detected_subnet%/*}"
+        cidr_part="${detected_subnet#*/}"
+        # Simple /24 assumption for common home networks
+        local network_prefix="${ip_part%.*}.0"
+        detected_subnet="${network_prefix}/${cidr_part}"
+      fi
+
+      subnet=$(prompt_optional SUBNET "LAN subnet" "${detected_subnet:-192.168.1.0/24}")
+      gateway=$(prompt_optional GATEWAY "LAN gateway" "${detected_gateway:-192.168.1.1}")
+
+      # Static IP for the Wakeforce container on macvlan
+      local default_wf_ip="${gateway%.*}.240"
+      wf_ip=$(prompt WF_IP "Static IP for Wakeforce container on LAN (must be unused)" "$default_wf_ip")
+
       # Append wakeforce fields to config JSON
-      updated_configs+=("${config%\}},\"enable_wakeforce\":\"yes\",\"config_type\":\"backend\",\"mac\":\"$mac\",\"broadcast\":\"$broadcast\",\"lan_interface\":\"$lan_interface\"}")
+      updated_configs+=("${config%\}},\"enable_wakeforce\":\"yes\",\"config_type\":\"backend\",\"mac\":\"$mac\",\"broadcast\":\"$broadcast\",\"lan_interface\":\"$lan_interface\",\"subnet\":\"$subnet\",\"gateway\":\"$gateway\",\"wf_ip\":\"$wf_ip\"}")
     else
       updated_configs+=("${config%\}},\"enable_wakeforce\":\"no\",\"config_type\":\"default\"}")
     fi
@@ -150,10 +174,13 @@ EOF
 EOF
     fi
 
+    local WF_IP_VAR="DOMAIN_${DOMAIN_NUM}_WF_IP"
+
     cat >> docker-compose.yml <<EOF
     networks:
       internal: {}
-      ${NETWORK_NAME}: {}
+      ${NETWORK_NAME}:
+        ipv4_address: \${${WF_IP_VAR}}
     cap_add:
       - NET_RAW
 
@@ -172,6 +199,8 @@ write_wakeforce_networks() {
     local DOMAIN_NUM=$((i + 1))
     local NETWORK_NAME="lan_${DOMAIN_NUM}"
     local LAN_VAR="DOMAIN_${DOMAIN_NUM}_LAN"
+    local SUBNET_VAR="DOMAIN_${DOMAIN_NUM}_SUBNET"
+    local GATEWAY_VAR="DOMAIN_${DOMAIN_NUM}_GATEWAY"
 
     cat >> docker-compose.yml <<EOF
   ${NETWORK_NAME}:
@@ -180,8 +209,8 @@ write_wakeforce_networks() {
       parent: \${${LAN_VAR}:-eth0}
     ipam:
       config:
-        - subnet: 192.168.1.0/24
-          gateway: 192.168.1.1
+        - subnet: \${${SUBNET_VAR}:-192.168.1.0/24}
+          gateway: \${${GATEWAY_VAR}:-192.168.1.1}
 
 EOF
   done
