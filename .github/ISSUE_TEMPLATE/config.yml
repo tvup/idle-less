@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Licensing & Sales
+    url: mailto:info@torbenit.dk
+    about: Questions about Wakeforce licensing or pricing
+  - name: Discussions
+    url: https://github.com/tvup/idle-less/discussions
+    about: Ask questions, share your setup, or discuss ideas
