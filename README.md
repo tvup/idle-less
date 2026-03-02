@@ -1,285 +1,104 @@
-# Idle-less
+# idle-less
 
-**Always-reachable services — even when your servers sleep.**
+**Your servers sleep. Traffic wakes them.**
 
-TL;DR
-```
-  curl -fsSL https://raw.githubusercontent.com/tvup/idle-less/master/install.sh | bash
-```
+A Docker-based reverse proxy with built-in Wake-on-LAN. Visitors hit your domain, the server boots automatically, and traffic flows — all in seconds.
 
-Idle-less is a lightweight gateway solution that keeps your application reachable even when backend servers are scaled to zero, powered down, or temporarily unavailable.
-
-It ensures that incoming requests are never “lost”, even if the actual workload is not currently running.
-
-> **Idle-less is powered by the Wakeforce gateway.**
-
----
-
-## The problem
-
-Modern infrastructure increasingly relies on *sleeping* or *on-demand* servers:
-
-* development and staging environments
-* cost-optimized production workloads
-* auto-scaled services
-* energy-aware deployments
-
-While this saves money and resources, it introduces a fundamental issue:
-
-> If everything sleeps, the first request has nowhere to go.
-
-Users experience timeouts, broken links, or confusing errors — even though the system is technically “healthy”.
-
----
-
-## The solution
-
-Idle-less introduces a small, always-on control layer **in front of your application**.
-
-This layer:
-
-* receives incoming traffic
-* determines whether the backend is ready
-* wakes the backend if necessary
-* communicates the warm-up state clearly to the client
-
-Your application code remains unchanged.
-
----
-
-## How Idle-less works
-
-1. All traffic enters through a reverse proxy
-2. Requests are forwarded to the Wakeforce gateway
-3. Wakeforce checks backend availability
-4. If the backend is sleeping:
-
-   * a wake action is triggered
-   * the client receives a controlled warm-up response
-5. Once the backend is ready, traffic flows normally
-
-Idle-less stays online even when the backend is completely offline.
-
----
-
-## Architecture overview
+## How it works
 
 ```
-Client
-  |
-  v
-[Reverse Proxy]        ← always on
-  |
-  v
-[Wakeforce Gateway]    ← always on
-  |
-  v
-[Backend Service]      ← may sleep
+Internet → idle-less (reverse proxy) → Backend server
+                 ↓ (if server is sleeping)
+            Wakeforce gateway
+                 ↓
+            Sends Wake-on-LAN packet
+                 ↓
+            Server boots → traffic flows
 ```
 
-Only the proxy and gateway must remain awake.
-
----
-
-## Core components
-
-### Idle-less (product)
-
-* Installation bundle
-* Reverse proxy configuration
-* Gateway orchestration
-* Client-safe warm-up behavior
-* Documentation and automation
-
-### Wakeforce (gateway)
-
-* Always-on HTTP gateway
-* Backend health detection
-* Wake triggering
-* Request forwarding
-* Explicit warm-up responses (`202 + Retry-After`)
-
-**Idle-less is powered by the Wakeforce gateway.**
-
----
-
-## What you get (v1)
-
-Idle-less v1 ships as a minimal, self-contained bundle:
-
-* **Two Docker images**
-
-  * Nginx reverse proxy
-  * Wakeforce gateway
-* **One `docker-compose.yml`**
-* **One install script**
-* **Zero application code changes**
-
-All images are versioned and pulled from a public registry.
-
----
+1. Traffic arrives at your domain
+2. idle-less checks if the backend server is online
+3. If offline, Wakeforce sends a Wake-on-LAN magic packet
+4. Visitors see a professional waiting screen while the server boots
+5. Once online, traffic is proxied seamlessly
 
 ## Quick start
 
-### 1. Clone the repository
-
 ```bash
-git clone https://github.com/yourorg/idle-less.git
-cd idle-less
+curl -fsSL https://raw.githubusercontent.com/tvup/idle-less/master/install.sh | bash
 ```
 
-### 2. Create configuration
+The interactive installer will guide you through:
+- Domain and backend configuration
+- SSL certificate setup (Let's Encrypt compatible)
+- Wakeforce Wake-on-LAN settings
+- Docker Compose generation
 
-```bash
-cp .env.example .env
-```
+### Installation modes
 
-At minimum, configure:
+| Mode | Command | Description |
+|------|---------|-------------|
+| Reverse proxy + Wakeforce | `bash install.sh --wakeforce` | Full setup with WoL |
+| Reverse proxy only | `bash install.sh` | Proxy without WoL |
+| Wakeforce standalone | `bash install.sh --wakeforce-only` | WoL gateway with direct port mapping |
+
+## Features
+
+- **Automatic Wake-on-LAN** — Magic packets sent when sleeping servers receive traffic
+- **SSL / HTTPS** — Full SSL termination with Let's Encrypt support
+- **Multi-domain** — Route unlimited domains to different backend servers
+- **Multi-platform** — Native Docker images for AMD64 and ARM64 (Raspberry Pi, Synology, QNAP)
+- **One-command install** — Interactive setup generates all configuration automatically
+- **Professional waiting screen** — Visitors see a polished status page with real-time health checks
+
+## Requirements
+
+- Docker with Compose v2
+- `curl` for installation
+- A server that supports Wake-on-LAN (most modern servers do)
+- For Wakeforce: a device on the same LAN as the target servers (e.g., Raspberry Pi)
+
+## Configuration
+
+After installation, configuration is managed through the `.env` file:
 
 ```env
-WF_PUBLIC_HOST=app.example.com
-WF_UPSTREAM_URL=http://app:8080
+DOMAIN_1_HOSTNAME=app.example.com
+DOMAIN_1_IP=192.168.1.50
+DOMAIN_1_PORT=3080
+DOMAIN_1_USE_SSL=yes
+DOMAIN_1_CONFIG=wakeforce
+DOMAIN_1_MAC=D8:9E:F3:12:D0:10
+DOMAIN_1_BROADCAST=192.168.1.255
 ```
 
-### 3. Install and start
+Multiple domains are supported via the `DOMAIN_{i}_*` pattern.
 
-```bash
-./install.sh
+## Architecture
+
 ```
-
-### 4. Configure DNS
-
-Point `WF_PUBLIC_HOST` to the server running Idle-less.
-
-That’s it.
-
----
-
-## Application integration
-
-Your application does **not** need to be aware of Idle-less.
-
-The only requirement is network connectivity between the Wakeforce gateway and your app.
-
-### Side-by-side Docker Compose (recommended)
-
-If your application runs in a separate compose project:
-
-```yaml
-networks:
-  wakeforce_internal:
-    external: true
-    name: wakeforce_internal
+┌──────────────────────────────────────────┐
+│  Docker Host (e.g., Raspberry Pi)        │
+│                                          │
+│  ┌─────────────────┐  ┌──────────────┐  │
+│  │  reverse-proxy   │  │  wakeforce   │  │
+│  │  (nginx)         │──│  (gateway)   │  │
+│  │  :80 :443        │  │  WoL + UI    │  │
+│  └─────────────────┘  └──────────────┘  │
+│         │ bridge            │ macvlan    │
+└─────────┼───────────────────┼────────────┘
+          │                   │
+    ┌─────┴─────┐     ┌──────┴──────┐
+    │  Internet │     │  LAN (WoL)  │
+    └───────────┘     └─────────────┘
 ```
-
-Attach your app service to that network.
-
-No other changes are required.
-
----
-
-## Wake mechanism (v1)
-
-Idle-less v1 uses a **webhook-based wake mechanism**.
-
-When the backend is unavailable:
-
-* Wakeforce calls a configured webhook
-* The webhook is responsible for starting or waking the backend
-* Wakeforce retries readiness checks automatically
-
-This keeps Idle-less infrastructure-agnostic and flexible.
-
----
-
-## HTTP behavior during warm-up
-
-While the backend is waking, clients receive a clear and explicit response:
-
-```http
-HTTP/1.1 202 Accepted
-Retry-After: 3
-Content-Type: application/json
-
-{ "status": "warming_up" }
-```
-
-This avoids timeouts, improves UX, and plays well with browsers and caches.
-
----
-
-## Health checks
-
-The following endpoints remain available at all times:
-
-* Reverse proxy: `GET /healthz`
-* Wakeforce gateway: `GET /healthz`
-
-These can be used by load balancers, monitors, or orchestration tools.
-
----
-
-## Updating Idle-less
-
-```bash
-docker compose pull
-docker compose up -d
-```
-
-Images are versioned and pinned. No implicit breaking changes.
-
----
-
-## Design principles
-
-Idle-less is built around a few core ideas:
-
-* **Always-on control plane**
-* **Sleepable, stateless backends**
-* **Explicit warm-up semantics**
-* **Minimal installation effort**
-* **No hidden behavior**
-
-If the backend is unavailable, Idle-less explains *why* — and fixes it.
-
----
-
-## What Idle-less is not
-
-Idle-less is intentionally focused.
-
-It is **not**:
-
-* a Kubernetes ingress controller
-* a service mesh
-* a replacement for autoscalers or load balancers
-* a platform that manages your infrastructure for you
-
-Instead, it fills the gap between users and sleeping services.
-
----
-
-## Who is Idle-less for?
-
-* Teams running scale-to-zero environments
-* Developers tired of broken links during warm-up
-* Ops teams who want explicit and predictable behavior
-* Anyone who wants sleeping servers without sleeping endpoints
-
----
-
-## Status
-
-Idle-less is actively developed.
-Version 1 is production-usable for controlled environments.
-
-Feedback, issues, and ideas are welcome.
-
----
 
 ## License
 
-All rights served
+The **reverse proxy** is open source and free to use.
+
+**Wakeforce** (the Wake-on-LAN gateway) requires a license key. Contact [info@torbenit.dk](mailto:info@torbenit.dk) for licensing.
 
 ---
 
+Built by [Torben IT ApS](mailto:info@torbenit.dk) · CVR 39630605

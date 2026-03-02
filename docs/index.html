@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>idle-less — Wake your servers on demand</title>
+    <meta name="description" content="Docker-based reverse proxy with automatic Wake-on-LAN. Your servers sleep until needed, wake instantly when traffic arrives.">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-light: #60a5fa;
+            --primary-dark: #2563eb;
+            --success: #10b981;
+            --bg-dark: #0f172a;
+            --bg-card: rgba(15, 23, 42, 0.72);
+            --text: rgba(226, 232, 240, 0.92);
+            --text-dim: rgba(148, 163, 184, 0.85);
+            --border: rgba(148, 163, 184, 0.18);
+            --glow: rgba(59, 130, 246, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Nav */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 16px 24px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #93c5fd, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--primary-light); }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-light);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .btn-outline:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 140px 24px 80px;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 6vw, 64px);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -0.03em;
+        }
+
+        .hero h1 .gradient {
+            background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 45%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.3));
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--text-dim);
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hero-buttons .btn { padding: 14px 28px; font-size: 16px; }
+
+        /* Terminal demo */
+        .terminal {
+            max-width: 680px;
+            margin: 48px auto 0;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .terminal-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .terminal-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: rgba(148, 163, 184, 0.3);
+        }
+
+        .terminal-body {
+            padding: 20px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            color: rgba(148, 163, 184, 0.9);
+        }
+
+        .terminal-body .cmd { color: var(--success); }
+        .terminal-body .comment { color: rgba(148, 163, 184, 0.5); }
+        .terminal-body .highlight { color: var(--primary-light); }
+
+        /* Section */
+        section {
+            padding: 80px 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 56px;
+        }
+
+        .section-title h2 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .section-title p {
+            font-size: 18px;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* How it works */
+        .flow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+        }
+
+        .flow-step {
+            padding: 28px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .flow-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--primary-light);
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .flow-step h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .flow-step p {
+            font-size: 14px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        /* Features */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .feature {
+            padding: 28px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .feature-icon {
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .feature h3 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature p {
+            font-size: 14px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        /* Pricing */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .price-card {
+            padding: 32px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            text-align: center;
+            position: relative;
+        }
+
+        .price-card.featured {
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.1);
+        }
+
+        .price-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 16px;
+            border-radius: 20px;
+            background: var(--primary);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .price-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .price-card .price {
+            font-size: 40px;
+            font-weight: 800;
+            margin: 16px 0;
+            letter-spacing: -0.03em;
+        }
+
+        .price-card .price span {
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--text-dim);
+        }
+
+        .price-card .price-desc {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-bottom: 24px;
+        }
+
+        .price-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 28px;
+        }
+
+        .price-features li {
+            padding: 8px 0;
+            font-size: 14px;
+            color: var(--text-dim);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .price-features li::before {
+            content: "\2713";
+            color: var(--success);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .price-card .btn { width: 100%; text-align: center; }
+
+        /* Use cases */
+        .use-cases {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .use-case {
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .use-case h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .use-case p {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        /* CTA */
+        .cta {
+            text-align: center;
+            padding: 80px 24px;
+        }
+
+        .cta h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .cta p {
+            font-size: 18px;
+            color: var(--text-dim);
+            margin-bottom: 32px;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        footer strong { color: var(--text); font-weight: 600; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .nav-links a:not(.btn) { display: none; }
+            .hero { padding: 120px 20px 60px; }
+            section { padding: 60px 20px; }
+            .pricing-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <div class="nav-brand">idle-less</div>
+        <div class="nav-links">
+            <a href="#how">How it works</a>
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="https://github.com/tvup/idle-less" class="btn btn-outline">GitHub</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+    <h1>Your servers sleep.<br><span class="gradient">Traffic wakes them.</span></h1>
+    <p>A Docker-based reverse proxy with built-in Wake-on-LAN. Visitors hit your domain, the server boots automatically, and traffic flows — all in seconds.</p>
+    <div class="hero-buttons">
+        <a href="#pricing" class="btn btn-primary">Get Started</a>
+        <a href="https://github.com/tvup/idle-less" class="btn btn-outline">View on GitHub</a>
+    </div>
+
+    <div class="terminal">
+        <div class="terminal-bar">
+            <div class="terminal-dot"></div>
+            <div class="terminal-dot"></div>
+            <div class="terminal-dot"></div>
+        </div>
+        <div class="terminal-body">
+            <span class="comment"># Install in one command</span><br>
+            <span class="cmd">$</span> curl -fsSL https://raw.githubusercontent.com/tvup/idle-less/master/install.sh | bash<br><br>
+            <span class="comment"># Configure your domains interactively</span><br>
+            <span class="highlight">? Hostname:</span> app.example.com<br>
+            <span class="highlight">? Backend IP:</span> 192.168.1.50<br>
+            <span class="highlight">? Enable Wakeforce:</span> yes<br>
+            <span class="highlight">? MAC address:</span> D8:9E:F3:12:D0:10<br><br>
+            <span class="cmd">&#10003;</span> <span class="highlight">Deployed!</span> Your server sleeps until needed.
+        </div>
+    </div>
+</div>
+
+<!-- How it works -->
+<section id="how">
+    <div class="section-title">
+        <h2>How it works</h2>
+        <p>idle-less sits between the internet and your servers, waking them only when real traffic arrives.</p>
+    </div>
+
+    <div class="flow">
+        <div class="flow-step">
+            <div class="flow-num">1</div>
+            <h3>Traffic arrives</h3>
+            <p>A visitor hits your domain. The reverse proxy receives the request and checks if the backend server is online.</p>
+        </div>
+        <div class="flow-step">
+            <div class="flow-num">2</div>
+            <h3>Server is sleeping</h3>
+            <p>If the server is offline, Wakeforce sends a Wake-on-LAN packet and shows a professional waiting screen to the visitor.</p>
+        </div>
+        <div class="flow-step">
+            <div class="flow-num">3</div>
+            <h3>Server wakes up</h3>
+            <p>The server boots, health checks confirm it's ready, and the visitor is seamlessly redirected to the live application.</p>
+        </div>
+        <div class="flow-step">
+            <div class="flow-num">4</div>
+            <h3>Server sleeps again</h3>
+            <p>When idle, the server goes back to sleep. Zero power consumption, zero noise, zero cost — until the next request.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+    <div class="section-title">
+        <h2>Built for real infrastructure</h2>
+        <p>Everything you need to run sleeping servers in production.</p>
+    </div>
+
+    <div class="features">
+        <div class="feature">
+            <div class="feature-icon">&#9889;</div>
+            <h3>Automatic Wake-on-LAN</h3>
+            <p>Sends magic packets when traffic arrives for a sleeping server. No manual intervention needed.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">&#128274;</div>
+            <h3>SSL / HTTPS</h3>
+            <p>Full SSL termination with Let's Encrypt certificate support. HTTPS backends supported too.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">&#127760;</div>
+            <h3>Multi-domain</h3>
+            <p>Route unlimited domains to different backend servers. Each domain has independent WoL configuration.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">&#128171;</div>
+            <h3>ARM64 + x86</h3>
+            <p>Native multi-platform Docker images. Runs on Raspberry Pi, Synology, QNAP, or any x86 server.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">&#128640;</div>
+            <h3>One-command install</h3>
+            <p>Interactive installer generates Docker Compose and env files. Deploy in minutes, not hours.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">&#128065;</div>
+            <h3>Professional waiting screen</h3>
+            <p>Visitors see a polished status page while the server wakes — with real-time health checks and progress.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Use cases -->
+<section>
+    <div class="section-title">
+        <h2>Who uses idle-less?</h2>
+    </div>
+
+    <div class="use-cases">
+        <div class="use-case">
+            <h4>Homelab enthusiasts</h4>
+            <p>Keep your media server, NAS, or dev box asleep until you actually need it. Save power, reduce noise.</p>
+        </div>
+        <div class="use-case">
+            <h4>Small businesses</h4>
+            <p>On-premise servers that only run during office hours — but wake instantly if a client visits your app.</p>
+        </div>
+        <div class="use-case">
+            <h4>Dev & staging environments</h4>
+            <p>Don't burn electricity on environments nobody is using right now. They wake when a developer visits.</p>
+        </div>
+        <div class="use-case">
+            <h4>University labs</h4>
+            <p>Workstations and compute servers that sleep when students are away, wake when a session starts.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing">
+    <div class="section-title">
+        <h2>Simple pricing</h2>
+        <p>The reverse proxy is free. Wakeforce — the Wake-on-LAN gateway — requires a license.</p>
+    </div>
+
+    <div class="pricing-grid">
+        <div class="price-card">
+            <h3>Reverse Proxy</h3>
+            <div class="price">Free</div>
+            <p class="price-desc">Open source, no license needed</p>
+            <ul class="price-features">
+                <li>Nginx-based reverse proxy</li>
+                <li>SSL / HTTPS termination</li>
+                <li>Multi-domain routing</li>
+                <li>Docker Compose deployment</li>
+                <li>ARM64 + x86 support</li>
+            </ul>
+            <a href="https://github.com/tvup/idle-less" class="btn btn-outline">Get started</a>
+        </div>
+
+        <div class="price-card featured">
+            <div class="price-badge">Most popular</div>
+            <h3>Wakeforce</h3>
+            <div class="price">Contact us</div>
+            <p class="price-desc">Wake-on-LAN gateway for your servers</p>
+            <ul class="price-features">
+                <li>Everything in Free</li>
+                <li>Automatic Wake-on-LAN</li>
+                <li>Professional waiting screen</li>
+                <li>Real-time health monitoring</li>
+                <li>Multi-server WoL support</li>
+                <li>License key activation</li>
+            </ul>
+            <a href="mailto:info@torbenit.dk?subject=Wakeforce%20License" class="btn btn-primary">Get a license</a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<div class="cta">
+    <h2>Ready to let your servers rest?</h2>
+    <p>Deploy idle-less in minutes. Your servers sleep, your power bill drops, and your visitors never notice.</p>
+    <div class="hero-buttons">
+        <a href="mailto:info@torbenit.dk?subject=Wakeforce%20License" class="btn btn-primary">Get Wakeforce</a>
+        <a href="https://github.com/tvup/idle-less" class="btn btn-outline">View source</a>
+    </div>
+</div>
+
+<footer>
+    <strong>Torben IT ApS</strong> &middot; CVR 39630605 &middot; &copy; <script>document.write(new Date().getFullYear())</script> All rights reserved.
+</footer>
+
+</body>
+</html>
